@@ -1,0 +1,508 @@
+h1. 中文
+
+"for English please click":#english
+
+h2. 基于jQuery或Zepto的图片延迟加载插件
+
+该插件在较长的页面中延迟加载图片。视窗外的图片会延迟加载，直到它们由于用户滚动而出现到视窗中。可以将它看做图像预加载技术的反向运用。
+
+在包含很多大图片且较长页面中使用延迟加载，能使页面载入更快。浏览器在只加载可见区域的图片后就达到绪状态。在某些情况下，它也能帮助减少服务器端的负载。
+
+图片延迟加载的灵感来自于Matt Mlinac的 "YUI ImageLoader":http://developer.yahoo.com/yui/imageloader/ 技术。
+
+这个项目由 "tuupola/jquery_lazyload":https://github.com/tuupola/jquery_lazyload fork而来，并加入了如下功能：
+* 修改了许多细节来提升性能;
+* 加入了对IE6/7的支持;
+* 可以基于 "Zepto":https://github.com/madrobby/zepto 使用，而不是只能基于jQuery;
+* `vertical_only` 选项，如果它被设置为true，则只检查图片的纵向位置来确定图片是否出现在视窗内，在只能纵向滚动的页面中，这将会提高性能。
+
+h2. 当前用户
+* "百度地图":http://map.baidu.com/
+* "百度团购":http://tuan.baidu.com/
+* +You
+
+h2. 如何使用?
+
+h3. Basic
+
+图片延迟加载插件基于jQuery或Zepto，在你HTML代码的尾部引入他们：
+
+<pre><script src="jQuery.js"></script>
+<!-- 或 <script src="zepto.js"> -->
+<script src="lazyload.min.js"></script></pre>
+
+你必须改变你的HTML代码。真实图像的URL必须被放入到`data-original`属性中。给所有需要延迟加载图片一个特殊的class是一个好主意。这样你就可以很容易地控制哪些图片会被插件绑定到。请注意，你的图片应该有宽度和高度属性，或者通过CSS来控制图片的宽度和高度。
+
+<pre>
+    <!-- 直接赋予图片宽高 -->
+    <img class="lazy" data-original="img/example.jpg" width="640" height="480">
+    
+    <!-- 或：通过css赋予图片宽高 -->
+    <style>
+        .lazy{width:640px;height:480px;}
+    </style>
+    <img class="lazy" data-original="img/example.jpg">
+    
+    <!-- 或：自适应宽度的图片样式（常用于移动端） -->
+    <style>
+        .lazy{width:100%;height:0;padding-top:75%;background-size:100%;}
+        /* 假设高宽比为 480:640，即75%，并使用背景图的方式将图片铺在padding-top区域内
+        （padding的百分比是宽度的百分比而不是高度的，即使是padding-top|padding-bottom） */
+    </style>
+    <div class="lazy" data-original="img/example.jpg"><div>
+    <!-- 请参阅examples/enabled_image_full_width.html -->
+</pre>
+
+然后你在你的代码中加入:
+
+<pre>$(".lazy").lazyload();</pre>
+
+这会使得所有class为lazy的元素被延迟加载
+
+h3. 高级
+
+h4. 在AJAX加载的内容中使用
+
+<pre><img class="lazy" data-original="img/example.jpg" width="765" height="574"></pre>
+
+<pre>
+$("#container").one("click", function() {
+    $("#container").load("images.html", function(response, status, xhr) {
+        $("img.lazy").lazyload();
+    });              
+});
+</pre>
+
+请参阅 `enabled_ajax.html`
+
+h4. 与css背景图一起使用
+
+<pre><div class="lazy" data-original="img/bmw_m1_hood.jpg" style="background-image: url('img/grey.gif'); width: 765px; height: 574px;"></div></pre>
+
+<pre>
+$("div.lazy").lazyload();
+// 或加入某些效果
+$("div.lazy").lazyload({
+    effect : "fadeIn"
+});
+</pre>
+
+请参阅 `enabled_background.html`
+
+h4. 图片在某个容器中滚动
+
+<pre><img class="lazy" data-original="img/example.jpg" width="765" height="574"></pre>
+
+<pre>
+#container {
+    height: 600px;
+    overflow: scroll;
+}
+</pre>
+
+<pre>
+$("img.lazy").lazyload({         
+    effect : "fadeIn",
+    container: $("#container")
+});
+</pre>
+
+请参阅 `enabled_container.html`
+
+h4. 在`scrollstop`(或其他自定义事件)时判断是否应该加载图片
+
+<pre><img class="lazy" data-original="img/example.jpg" width="765" height="574"></pre>
+
+<pre>
+<script src="jquery.scrollstop.js" type="text/javascript"></script>
+</pre>
+
+<pre>
+$("img.lazy").lazyload({
+  event: "scrollstop"
+});
+</pre>
+
+请参阅 `enabled_gazillion.php`
+
+h4. 图片在某个容器中的水平方向滚动
+
+<pre><img class="lazy" data-original="img/example.jpg" width="765" height="574"></pre>
+
+<pre>
+#container {
+    width: 800px;
+    overflow: scroll;
+}
+#inner_container {
+    width: 4750px;
+}
+</pre>
+
+<pre>
+$("img.lazy").lazyload({
+    container: $("#container")
+});
+</pre>
+
+请参阅 `enabled_wide_container.html`
+
+h4. 加入fadein效果
+
+<pre><img class="lazy" data-original="img/example.jpg" width="765" height="574"></pre>
+
+<pre>
+$("img.lazy").lazyload({
+    effect : "fadeIn"
+});
+</pre>
+
+请参阅 `enabled_fadein.html`
+
+h4. 在5秒延迟后加载图片
+
+<pre><img class="lazy" src="img/grey.gif" data-original="img/example.jpg" width="765" height="574"></pre>
+
+<pre>
+$(function() {          
+    $("img.lazy").lazyload({
+        event : "sporty"
+    });
+});
+ 
+$(window).bind("load", function() { 
+    var timeout = setTimeout(function() {
+        $("img.lazy").trigger("sporty")
+    }, 5000);
+});
+</pre>
+
+请参阅 `enabled_timeout.html`
+
+h4. 在水平方向很宽的页面中使用
+
+<pre><img class="lazy" data-original="img/example.jpg" width="765" height="574"></pre>
+
+<pre>
+$("img.lazy").lazyload({
+    effect: "fadeIn"
+});
+</pre>
+
+请参阅 `enabled_wide.html`
+
+h4. 在只能在竖直方向滚动的页面中使用
+
+<pre><img class="lazy" data-original="img/example.jpg" width="765" height="574"></pre>
+
+<pre>
+$("img.lazy").lazyload({
+    vertical_only: true
+});
+</pre>
+
+请参阅 `enabled_vertical_only.html`
+
+h4. options对象
+
+你可以将options对象当做`lazyload`方法的第一个参数来使用。
+
+<pre>
+var options = {
+    // 默认情况下，图像会在出现在屏幕上时被加载。如果你想的图像更早地加载，可以使用threshold参数。设置threshold为200，将导致图像在它离视窗边缘还有200px时开始加载。
+    threshold          : 0, // default: 0. 另一个例子: 200
+    // 在页面滚动后，该插件将所有未加载的图像循环一遍。并在循环检查图像是否在视窗中。默认情况下，发现第一个位于视窗外的图片时，循环停止。这是基于以下的假设：页面上图像的顺序与它们在HTML代码中的顺序是一致的。然而对于某些布局，这可能是错误的。你可以通过设置failure_limit参数来控制循环终止的行为（failure_limit参数的数值为最多允许多少张图片被检查出位于视窗外后停止检查循环中剩余未检查的图片）。
+    failure_limit      : 0, // default: 0. 另一个例子: 10
+    // 指定触发什么事件时，开始加载真实的图片。你可以使用jQuery中已有的事件，如click或mouseover。你也可以使用自定义的事件如sporty或foobar。当事件是`scroll`或类似事件类型时，还需要检查图像是否已出现在视窗中。
+    event              : 'scroll', // default: 'scroll'. 另一个例子: 'click'
+    // 默认情况下插件在等待图片完全加载后调用show()。你可以使用想要的任何效果。下面的代码使用了fadeIn效果。你可以在demo页面中查看该效果。
+    effect             : 'show', // default: 'show'. 另一个例子: 'fadein'
+    // 上述效果（`effect`）函数的参数数组。举两个例子，如果`effect`参数设置为`show`且`effect_params`参数设置为[400]，将会调用`$element.show(400)`，即在400ms后显示图片；如果`effect`参数设置为`fadein`且`effect_params`参数设置为[400,completeFunction]，将会调用`fadein(400,completeFunction)`，即在400ms内渐入显示图片，并在渐入动画完成时调用`completeFunction`。
+    effect_params      : null, // default: undefined. 另一个例子: [400].
+    // 你可以将改插件运用在某个容器内，如一个有滚动条的div。只需要传递容器的jQuery对象。我们有在纵向和横向滚动的容器中使用插件的两个demo。
+    container          : window, // default: 'show'. 另一个例子: $('#container')
+    // 默认情况下，图片的真实url被设置在`data-original`属性内，你可以将它们设置在其他属性内，如`url`，这样插件将在`data-url`属性中查找图片的真实地址。
+    data_attribute     : 'original', // default: 'original'. 另一个例子: 'url'
+    // 还存在一些小问题：你可能有不可见的图片，即使它（的位置）已在视图中。为了提高性能，插件默认忽略不可见（`($this.width() || $this.height()) && $this.css("display") !== "none")`）的图片。如果你扔想要加载这些图片，只需将skip_invisible设置为false
+    skip_invisible     : true, // default: true. 另一个例子: false
+    // 当图片在视窗中出现时回调。`this`指向出现的图片元素的节点，参数为尚未出现的图片的数量和配置参数对象。
+    appear             : null, // default: null. 另一个例子: function(elements_left, options){}
+    // 当图片加载完毕时回调。`this`指向出现的图片元素的节点，参数为尚未出现的图片的数量和配置参数对象。
+    load               : null, // default: null. 另一个例子: function(elements_left, options){}
+    // 在大多数情况下，页面只能纵向滚动。此时，只需要检查图片的竖直位置是否出现在视图中即可。如果这样做能提高性能。你可以在只能纵向滚动的页面中将`vertical_only`参数设置为true
+    vertical_only      : false, // default: false. 另一个例子: true
+    // 在参数`event`设置为`scroll`的情况下，除了iOS以外的设备，用户一次滚屏会触发多次scroll事件，而实际上我们无需在每一次scroll事件中检查图片是否已经出现在视窗中，通过这个参数设置两次检查之间最少的间隔时间，用来提高性能。当设置为0时，则为没有最少间隔时间，每一次scroll事件触发时都检测
+    minimum_interval            : 300, // default: 300. 另一个例子: 0
+    // 和上面那个参数相关，iOS设备上，用户一次滚屏只会触发一次scroll事件，于是没有必要规定最小的检查之间的间隔。设置为false将忽略上面的检查间隔参数`minimum_interval`，设置为true则会处理上面的间隔参数
+    use_minimum_interval_in_ios : false, // default: false. 另一个例子: true
+    // 如果一个img元素没有指定src属性，我们使用这个placeholder。
+    placeholder_data_img : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC',
+    // IE6/7 的 placeholder。
+    placeholder_real_img : 'http://webmap3.map.bdimg.com/yyfm/lazyload/0.0.1/img/placeholder.png'
+}
+$("img.lazy").lazyload(options);
+</pre>
+
+h2. License
+
+所有代码遵循 "MIT License":http://www.opensource.org/licenses/mit-license.php. 所有图片license是 "Creative Commons Attribution 3.0 Unported License":http://creativecommons.org/licenses/by/3.0/deed.en_US 。也就是说你可以自由地做任何你想做的事情。只是不能在代码中移除我的名字。
+
+
+
+
+h1. English
+
+"查看中文文档请点击":#%E4%B8%AD%E6%96%87
+
+h2. Lazy Load Plugin for jQuery | Zepto
+
+Lazy Load delays loading of images in long web pages. Images outside of viewport wont be loaded before user scrolls to them. This is opposite of image preloading.
+
+Using Lazy Load on long web pages containing many large images makes the page load faster. Browser will be in ready state after loading visible images. In some cases it can also help to reduce server load.
+
+Lazy Load is inspired by "YUI ImageLoader":http://developer.yahoo.com/yui/imageloader/ Utility by Matt Mlinac.
+
+This project is forked from "tuupola/jquery_lazyload":https://github.com/tuupola/jquery_lazyload and add features below:
+* Modified many details to improve performance;
+* IE6/7 supported;
+* Available with "Zepto":https://github.com/madrobby/zepto ;
+* The `vertical_only` option, if set to true, only check images's vertical position. It can improve performance in page which can only scroll vertically.
+
+h2. Current Users
+* "百度地图":http://map.baidu.com/
+* "百度团购":http://tuan.baidu.com/
+* +You
+
+h2. How to Use?
+
+h3. Basic
+
+Lazy Load depends on jQuery or Zepto. Include them in end of your HTML code:
+
+<pre><script src="jquery.js"></script>
+<!-- or <script src="zepto.js"> -->
+<script src="lazyload.min.js"></script></pre>
+
+You can use our cdn server:
+
+<pre><script src="http://webmap2.map.bdimg.com/yyfm/jQuery_1.x/1.10.2/js/jQuery_1.x.min.js"></script>
+<!-- or <script src="http://webmap2.map.bdimg.com/yyfm/zepto_default/1.1.2/js/zepto_default.min.js"></script> -->
+<script src="http://webmap3.map.bdimg.com/yyfm/lazyload/1.0.0/js/lazyload.min.js"></script></pre>
+
+You must alter your HTML code. URL of the real image must be put into data-original attribute. It is good idea to give Lazy Loaded image a specific class. This way you can easily control which images plugin is binded to. Note that you should have width and height attributes in your image tag, or  gives the width and height via CSS.
+
+<pre>
+    <!-- gives image's width and height directly -->
+    <img class="lazy" data-original="img/example.jpg" width="640" height="480">
+    
+    <!-- or : gives the width and height via CSS -->
+    <style>
+        .lazy{width:640px;height:480px;}
+    </style>
+    <img class="lazy" data-original="img/example.jpg">
+    
+    <!-- or : image with self-adaptive width (commonly used in the mobile) -->
+    <style>
+        .lazy{width:100%;height:0;padding-top:75%;background-size:100%;}
+        /* Assuming that the aspect ratio of 480:640, i.e. 75%,
+        and use the image as a background image plated in `padding-top` area 
+         (The percentage is the percentage of the width of the padding 
+        instead of the height even is `padding-top` or `padding-bottom`) */
+    </style>
+    <div class="lazy" data-original="img/example.jpg"><div>
+    <!-- see : examples/enabled_image_full_width.html -->
+</pre>
+
+then in your code do:
+
+<pre>$(".lazy").lazyload();</pre>
+
+This causes all elements of class lazy to be lazy loaded. 
+
+h3. Advanced
+
+h4. With AJAX loaded content
+
+<pre><img class="lazy" data-original="img/example.jpg" width="765" height="574"></pre>
+
+<pre>
+$("#container").one("click", function() {
+    $("#container").load("images.html", function(response, status, xhr) {
+        $("img.lazy").lazyload();
+    });              
+});
+</pre>
+
+See `enabled_ajax.html`
+
+h4. With css background images
+
+<pre><div class="lazy" data-original="img/bmw_m1_hood.jpg" style="background-image: url('img/grey.gif'); width: 765px; height: 574px;"></div></pre>
+
+<pre>
+$("div.lazy").lazyload();
+// Or add some effect
+$("div.lazy").lazyload({
+    effect : "fadeIn"
+});
+</pre>
+
+See `enabled_background.html`
+
+h4. Scrolling in a container
+
+<pre><img class="lazy" data-original="img/example.jpg" width="765" height="574"></pre>
+
+<pre>
+#container {
+    height: 600px;
+    overflow: scroll;
+}
+</pre>
+
+<pre>
+$("img.lazy").lazyload({         
+    effect : "fadeIn",
+    container: $("#container")
+});
+</pre>
+
+See `enabled_container.html`
+
+h4. Load when `scrollstop` (or other custom event)
+
+<pre><img class="lazy" data-original="img/example.jpg" width="765" height="574"></pre>
+
+<pre>
+<script src="jquery.scrollstop.js" type="text/javascript"></script>
+</pre>
+
+<pre>
+$("img.lazy").lazyload({
+  event: "scrollstop"
+});
+</pre>
+
+See `enabled_gazillion.php`
+
+h4. Scrolling in a horizontal container
+
+<pre><img class="lazy" data-original="img/example.jpg" width="765" height="574"></pre>
+
+<pre>
+#container {
+    width: 800px;
+    overflow: scroll;
+}
+#inner_container {
+    width: 4750px;
+}
+</pre>
+
+<pre>
+$("img.lazy").lazyload({
+    container: $("#container")
+});
+</pre>
+
+See `enabled_wide_container.html`
+
+h4. With fadein effect
+
+<pre><img class="lazy" data-original="img/example.jpg" width="765" height="574"></pre>
+
+<pre>
+$("img.lazy").lazyload({
+    effect : "fadeIn"
+});
+</pre>
+
+See `enabled_fadein.html`
+
+h4. Load images after `five second` delay
+
+<pre><img class="lazy" src="img/grey.gif" data-original="img/example.jpg" width="765" height="574"></pre>
+
+<pre>
+$(function() {          
+    $("img.lazy").lazyload({
+        event : "sporty"
+    });
+});
+ 
+$(window).bind("load", function() { 
+    var timeout = setTimeout(function() {
+        $("img.lazy").trigger("sporty")
+    }, 5000);
+});
+</pre>
+
+See `enabled_timeout.html`
+
+h4. Using in (horizontal) wide page
+
+<pre><img class="lazy" data-original="img/example.jpg" width="765" height="574"></pre>
+
+<pre>
+$("img.lazy").lazyload({
+    effect: "fadeIn"
+});
+</pre>
+
+See `enabled_wide.html`
+
+h4. Using in page which can only scroll vertically
+
+<pre><img class="lazy" data-original="img/example.jpg" width="765" height="574"></pre>
+
+<pre>
+$("img.lazy").lazyload({
+    vertical_only: true
+});
+</pre>
+
+See `enabled_vertical_only.html`
+
+h4. The options object
+
+You can use the options object as the first argument in the `lazyload` method.
+
+<pre>
+var options = {
+    // By default images are loaded when they appear on the screen. If you want images to load earlier use threshold parameter. Setting threshold to 200 causes image to load 200 pixels before it appears on viewport.
+    threshold          : 0, // default: 0. Another example: 200
+    // After scrolling page plugin loops though unloaded images. Loop checks if image has become visible. By default loop is stopped when first image outside viewport is found. This is based on following assumption. Order of images on page is same as order of images in HTML code. With some layouts assumption this might be wrong. You can control loading behaviour with failure_limit setting.
+    failure_limit      : 0, // default: 0. Another example: 10
+    // Specified an event, when it triggers, start loading the real images. You can use jQuery event such as click or mouseover. You can also use custom events such as sporty or foobar. if the event is `scroll` or a similar type, it also need to check if the image has appeared in the viewport. Default is to wait until user scrolls down and image appears on the viewport.
+    event              : 'scroll', // default: 'scroll'. Another example: 'click'
+    // By default plugin waits for image to fully load and calls show(). You can use any effect you want. Following code uses fadeIn effect. Check how it works at effect demo page.
+    effect             : 'show', // default: 'show'. Another example: 'fadein'
+    // the arguments array of `effect` function. For two examples, if `effect` is set to `show` and `effect_params` is set to [400], it will call `$element.show(400)` to show the image after 400ms; if `effect` is set to `fadein` and `effect_params` is set to [400,completeFunction], it will call `$element.fadein(400,completeFunction)` to fadeIn the image in 400ms and call the `completeFunction` when the animation is complete.
+    effect_params      : null, // default: undefined. Another example: [400].
+    // You can also use plugin for images inside scrolling container, such as div with scrollbar. Just pass the container as jQuery object. There is a demo for horizontal and vertical container.
+    container          : window, // default: 'show'. Another example: $('#container')
+    // By default images's original url set in `data-original` attribute, you can change it to Another attribute such as `url`,so it will find the original url in `data-url` attribute.
+    data_attribute     : 'original', // default: 'original'. Another example: 'url'
+    // There are cases when you have images which are in viewport but not visible. To improve performance plugin ignores not visible (`($this.width() || $this.height()) && $this.css("display") !== "none")`) by default. If you want to load these images set skip_invisible to false.
+    skip_invisible     : true, // default: true. Another example: false
+    // Call when one image is appear to the viewport. The `this` is refer to the appear image element node, params are count of elements not appear yet, and the options.
+    appear             : null, // default: null. Another example: function(elements_left, options){}
+    // Call when one image is load. The `this` is refer to the appear image element node, params are count of elements not appear yet, and the options.
+    load               : null, // default: null. Another example: function(elements_left, options){}
+    // In most situations, page can only scroll vertically.At this time, only check images's vertical position will improve performance.You can only set vertical_only to true when page can only scroll vertically.
+    vertical_only      : false, // default: false. Another example: true
+    // When the option `event` is set to `scroll`, in addition to iOS devices, the scroll event will trigger several times in once user scrolling, but in fact we do not need to check if the images should apper in every scroll event , set the minimum interval between checks can improve performance. When set to `0`, it will check in every scroll event
+    minimum_interval   : 300, // default: 300. Another example: 0
+    // When the option `event` is set to `scroll`, in iOS devices, the scroll event will trigger only one time in once user scrolling，so there is no need to use the `minimum_interval` option。set `false` will not use the `minimum_interval` option, set to `true` will use
+    use_minimum_interval_in_ios : false, // default: false. Another example: true
+    // If element is an img and no src attribute given, use placeholder. 
+    placeholder_data_img : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC',
+    // Placeholder for IE6/7
+    placeholder_real_img : 'http://ditu.baidu.cn/yyfm/lazyload/0.0.1/img/placeholder.png'
+}
+$("img.lazy").lazyload(options);
+</pre>
+
+h2. License
+
+All code licensed under the "MIT License":http://www.opensource.org/licenses/mit-license.php. All images licensed under "Creative Commons Attribution 3.0 Unported License":http://creativecommons.org/licenses/by/3.0/deed.en_US. In other words you are basically free to do whatever you want. Just don't remove my name from the source.
