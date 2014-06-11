@@ -34,6 +34,7 @@
             fold = $(options.container).offset().top + $(options.container).height()
         }
         return fold <= $(element).offset().top - options.threshold
+        
     }
 
     function rightoffold(element, options){
