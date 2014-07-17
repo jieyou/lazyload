@@ -201,7 +201,23 @@ $("img.lazy").lazyload({
 });
 </pre>
 
-请参阅 `enabled_vertical_only.html`
+h4. 重写图片的原始url（某些情况下，你需要对图片的原始url做一些处理）
+
+<pre><img class="lazy" data-original="img/bmw_m1_hood.jpg" width="765" height="574"></pre>
+
+<pre>
+$("img.lazy").lazyload({
+    url_rewriter_fn:function($element,originalSrcInAttr){
+        // this -> image element
+        if(originalSrcInAttr == 'img/bmw_m1_hood.jpg'){ // in the example, we change the first image's url to another
+            return 'img/bmw_m1_hood_rewritten.jpg'
+        }
+        return originalSrcInAttr
+    }
+})
+</pre>
+
+请参阅 `enabled_url_rewriter_fn.html`
 
 h4. options对象
 
@@ -462,6 +478,24 @@ $("img.lazy").lazyload({
 </pre>
 
 See `enabled_vertical_only.html`
+
+h4. rewrite image's original url (somethins, you need do something with the original url)
+
+<pre><img class="lazy" data-original="img/bmw_m1_hood.jpg" width="765" height="574"></pre>
+
+<pre>
+$("img.lazy").lazyload({
+    url_rewriter_fn:function($element,originalSrcInAttr){
+        // this -> image element
+        if(originalSrcInAttr == 'img/bmw_m1_hood.jpg'){ // in the example, we change the first image's url to another
+            return 'img/bmw_m1_hood_rewritten.jpg'
+        }
+        return originalSrcInAttr
+    }
+})
+</pre>
+
+see `enabled_url_rewriter_fn.html`
 
 h4. The options object
 

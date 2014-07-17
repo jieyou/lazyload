@@ -19,6 +19,7 @@
             vertical_only               : false,
             minimum_interval            : 300,
             use_minimum_interval_in_ios : false,
+            url_rewriter_fn             : emptyFn,
             placeholder_data_img        : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC',
             // Support IE6\7 that does not support data image
             placeholder_real_img        : 'http://ditu.baidu.cn/yyfm/lazyload/0.0.1/img/placeholder.png'
@@ -26,68 +27,72 @@
         isIOS = (/(?:iphone|ipod|ipad).*os/gi).test(navigator.appVersion),
         isIOS5 = isIOS && (/(?:iphone|ipod|ipad).*os 5/gi).test(navigator.appVersion)
 
-    function belowthefold(element, options){
+    function emptyFn(){}
+
+    function belowthefold($element, options){
         var fold
         if(options.container === undefined || options.container === window){
             fold = (window.innerHeight ? window.innerHeight : $window.height()) + $window.scrollTop()
         }else{
-            fold = $(options.container).offset().top + $(options.container).height()
+            fold = options._$container.offset().top + $(options.container).height()
         }
-        return fold <= $(element).offset().top - options.threshold
+        return fold <= $element.offset().top - options.threshold
     }
 
-    function rightoffold(element, options){
+    function rightoffold($element, options){
         var fold
         if(options.container === undefined || options.container === window){
             // Zepto do not support `$window.scrollLeft()` yet.
             fold = $window.width() + ($.fn.scrollLeft?$window.scrollLeft():window.pageXOffset)
         }else{
-            fold = $(options.container).offset().left + $(options.container).width()
+            fold = options._$container.offset().left + $(options.container).width()
         }
-        return fold <= $(element).offset().left - options.threshold
+        return fold <= $element.offset().left - options.threshold
     }
 
-    function abovethetop(element, options){
+    function abovethetop($element, options){
         var fold
         if(options.container === undefined || options.container === window){
             fold = $window.scrollTop()
         }else{
-            fold = $(options.container).offset().top
+            fold = options._$container.offset().top
         }
-        return fold >= $(element).offset().top + options.threshold  + $(element).height()
+        // console.log('abovethetop fold '+ fold)
+        // console.log('abovethetop $element.height() '+ $element.height())
+        return fold >= $element.offset().top + options.threshold  + $element.height()
     }
 
-    function leftofbegin(element, options){
+    function leftofbegin($element, options){
         var fold
         if(options.container === undefined || options.container === window){
             // Zepto do not support `$window.scrollLeft()` yet.
             fold = $.fn.scrollLeft?$window.scrollLeft():window.pageXOffset
         }else{
-            fold = $(options.container).offset().left
+            fold = options._$container.offset().left
         }
-        return fold >= $(element).offset().left + options.threshold + $(element).width()
+        return fold >= $element.offset().left + options.threshold + $element.width()
     }
 
-    function checkAppear(elements, options){
+    function checkAppear($elements, options){
         var counter = 0
-        elements.each(function(){
-            var $this = $(this)
+        $elements.each(function(i,e){
+            var $element = $elements.eq(i)
             if(options.skip_invisible &&
             // Support zepto
-             !($this.width() || $this.height()) && $this.css("display") !== "none"){
+             !($element.width() || $element.height()) && $element.css("display") !== "none"){
                 return
             }
             function appear(){
-                $this.trigger('_lazyload_appear')
+                $element.trigger('_lazyload_appear')
                 // if we found an image we'll load, reset the counter 
                 counter = 0
             }
             // If vertical_only is set to true, only check the vertical to decide appear or not
             // In most situations, page can only scroll vertically, set vertical_only to true will improve performance
             if(options.vertical_only){
-                if(abovethetop(this, options)){
+                if(abovethetop($element, options)){
                     // Nothing. 
-                }else if(!belowthefold(this, options)){
+                }else if(!belowthefold($element, options)){
                     appear()
                 }else{
                     if(++counter > options.failure_limit){
@@ -95,9 +100,9 @@
                     }
                 }
             }else{
-                if(abovethetop(this, options) || leftofbegin(this, options)){
+                if(abovethetop($element, options) || leftofbegin($element, options)){
                     // Nothing. 
-                }else if(!belowthefold(this, options) && !rightoffold(this, options)){
+                }else if(!belowthefold($element, options) && !rightoffold($element, options)){
                     appear()
                 }else{
                     if(++counter > options.failure_limit){
@@ -109,15 +114,14 @@
     }
 
     // Remove image from array so it is not looped next time. 
-    function getUnloadElements(elements){
-        var temp = $.grep(elements, function(element){
-            return !element._lazyload_loadStarted
+    function getUnloadElements($elements){
+        return $elements.filter(function(i,e){
+            return !e._lazyload_loadStarted
         })
-        return $(temp)
     }
 
     $.fn.lazyload = function(options){
-        var elements = this,
+        var $elements = this,
             $container,
             isScrollEvent,
             isScrollTypeEvent,
@@ -134,23 +138,26 @@
         })
 
         // Cache container as jQuery as object. 
-        $container = (options.container === undefined || options.container === window) ? $window : $(options.container)
+        $container = options._$container = (options.container === undefined || options.container === window) ? $window : $(options.container)
 
         isScrollEvent = options.event == 'scroll'
 
         // isScrollTypeEvent. cantains custom scrollEvent . Such as 'scrollstart' & 'scrollstop'
         isScrollTypeEvent = isScrollEvent || options.event == 'scrollstart' || options.event == 'scrollstop'
 
-        elements.each(function(){
+        $elements.each(function(i,e){
             var element = this,
-                $element = $(element),
+                $element = $elements.eq(i),
                 placeholderSrc = $element.attr('src'),
-                originalSrc = $element.attr('data-'+options.data_attribute),
+                originalSrcInAttr = $element.attr('data-'+options.data_attribute), // `data-original` attribute value
+                originalSrc = options.url_rewriter_fn == emptyFn?
+                    originalSrcInAttr:
+                    options.url_rewriter_fn.call(element,$element,originalSrcInAttr),
                 isImg = $element.is('img')
 
             if(element._lazyload_loadStarted == true || placeholderSrc == originalSrc){
                 element._lazyload_loadStarted = true
-                elements = getUnloadElements(elements)
+                $elements = getUnloadElements($elements)
                 return
             }
 
@@ -172,7 +179,7 @@
                 if(!element._lazyload_loadStarted){
                     effectIsNotImmediacyShow = (options.effect != 'show' && $.fn[options.effect] &&  (!options.effect_params || (effectParamsIsArray && options.effect_params.length == 0)))
                     if(options.appear){
-                        elements_left = elements.length
+                        elements_left = $elements.length
                         options.appear.call(element, elements_left, options)
                     }
                     element._lazyload_loadStarted = true
@@ -191,9 +198,9 @@
                         if(effectIsNotImmediacyShow){
                             $element[options.effect].apply($element,effectParamsIsArray?options.effect_params:[])
                         }
-                        elements = getUnloadElements(elements)
+                        $elements = getUnloadElements($elements)
                         if(options.load){
-                            elements_left = elements.length
+                            elements_left = $elements.length
                             options.load.call(element, elements_left, options)
                         }
                     }).attr('src',originalSrc)
@@ -219,12 +226,12 @@
                 if(isScrollEvent && hasMinimumInterval && (!isIOS || options.use_minimum_interval_in_ios)){
                     if(!scrollTimer){
                         scrollTimer = setTimeout(function(){
-                            checkAppear(elements, options)
+                            checkAppear($elements, options)
                             scrollTimer = null
                         },options.minimum_interval) // only check once in 300ms
                     }
                 }else{
-                    return checkAppear(elements, options)
+                    return checkAppear($elements, options)
                 }
             })
         }
@@ -232,22 +239,22 @@
         // Check if something appears when window is resized. 
         // Force initial check if images should appear when window onload. 
         $window.on('resize load', function(){
-            checkAppear(elements, options)
+            checkAppear($elements, options)
         })
               
         // With IOS5 force loading images when navigating with back button. 
         // Non optimal workaround. 
         if(isIOS5){
             $window.on('pageshow', function(e){
-                if (e.originalEvent && e.originalEvent.persisted){
-                    elements.trigger('_lazyload_appear')
+                if(e.originalEvent && e.originalEvent.persisted){
+                    $elements.trigger('_lazyload_appear')
                 }
             })
         }
 
         // Force initial check if images should appear. 
         $(function(){
-            checkAppear(elements, options)
+            checkAppear($elements, options)
         })
         
         return this
