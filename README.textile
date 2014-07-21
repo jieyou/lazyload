@@ -201,6 +201,8 @@ $("img.lazy").lazyload({
 });
 </pre>
 
+请参阅 `enabled_vertical_only.html`
+
 h4. 重写图片的原始url（某些情况下，你需要对图片的原始url做一些处理）
 
 <pre><img class="lazy" data-original="img/bmw_m1_hood.jpg" width="765" height="574"></pre>
@@ -215,6 +217,7 @@ $("img.lazy").lazyload({
         return originalSrcInAttr
     }
 })
+// 回调函数的参数，第一项为当前元素的jQuery|Zepto对象，第二项为当前元素的图片的原始url
 </pre>
 
 请参阅 `enabled_url_rewriter_fn.html`
@@ -493,6 +496,9 @@ $("img.lazy").lazyload({
         return originalSrcInAttr
     }
 })
+// the arguments for callback function
+//      1st: currect element's jQuery|Zepto Objcet
+//      2nd: the original image src for currect element
 </pre>
 
 see `enabled_url_rewriter_fn.html`
