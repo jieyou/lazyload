@@ -497,8 +497,8 @@ $("img.lazy").lazyload({
     }
 })
 // the arguments for callback function
-//      1st: currect element's jQuery|Zepto Objcet
-//      2nd: the original image src for currect element
+//      1st: currect element's jQuery|Zepto objcet
+//      2nd: currect element's original image src
 </pre>
 
 see `enabled_url_rewriter_fn.html`

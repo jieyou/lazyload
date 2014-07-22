@@ -111,7 +111,11 @@
   <script src="page_js/demo.js"></script>
   <script type="text/javascript" charset="utf-8">
   $(function() {
-     $("img.lazy").lazyload();
+     // $("img.lazy").lazyload({
+     //  'load':function(){alert(1)},
+     //  'appear':function(){alert(2)}
+     // });
+    $("img.lazy").lazyload({})
   });
   </script>
 </body>
