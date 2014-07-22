@@ -3,7 +3,7 @@
  * contacts:baidu hi->youyo1122
  * see https://github.com/jieyou/lazyload
  */
-;(function($,window,document,undefined){
+;(function($,window,undefined){
     var $window = $(window),
         defaultOptions = {
             threshold                   : 0,
@@ -275,4 +275,4 @@
         return this
     }
 
-})(window.jQuery||window.Zepto, window, document)
+})(window.jQuery||window.Zepto, window)
