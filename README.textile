@@ -14,7 +14,7 @@ h2. 基于jQuery或Zepto的图片延迟加载插件
 * 修改了许多细节来提升性能;
 * 加入了对IE6/7的支持;
 * 可以基于 "Zepto":https://github.com/madrobby/zepto 使用，而不是只能基于jQuery;
-* `vertical_only` 选项，如果它被设置为true，则只检查图片的纵向位置来确定图片是否出现在视窗内，在只能纵向滚动的页面中，这将会提高性能。
+* `vertical_only` 、 `minimum_interval` 、 `use_minimum_interval_in_ios` 、`no_fake_img_loader` 等额外的选项。
 
 h2. 当前用户
 * "百度地图":http://map.baidu.com/
@@ -147,7 +147,7 @@ $("img.lazy").lazyload({
 
 请参阅 `enabled_wide_container.html`
 
-h4. 加入fadein效果
+h4. 加入fadeIn效果
 
 <pre><img class="lazy" data-original="img/example.jpg" width="765" height="574"></pre>
 
@@ -203,7 +203,9 @@ $("img.lazy").lazyload({
 
 请参阅 `enabled_vertical_only.html`
 
-h4. 重写图片的原始url（某些情况下，你需要对图片的原始url做一些处理）
+h4. 重写图片的原始url
+
+某些情况下，你需要对图片的原始url做一些处理
 
 <pre><img class="lazy" data-original="img/bmw_m1_hood.jpg" width="765" height="574"></pre>
 
@@ -211,16 +213,30 @@ h4. 重写图片的原始url（某些情况下，你需要对图片的原始url�
 $("img.lazy").lazyload({
     url_rewriter_fn:function($element,originalSrcInAttr){
         // this -> image element
-        if(originalSrcInAttr == 'img/bmw_m1_hood.jpg'){ // in the example, we change the first image's url to another
+        if(originalSrcInAttr == 'img/bmw_m1_hood.jpg'){ // in the example, we changed the first image's url to another
             return 'img/bmw_m1_hood_rewritten.jpg'
         }
         return originalSrcInAttr
     }
 })
-// 回调函数的参数，第一项为当前元素的jQuery|Zepto对象，第二项为当前元素的图片的原始url
+// 回调函数中，`this`指向出现的图片元素的节点，参数第一项为当前元素的jQuery|Zepto对象，第二项为当前元素的图片的原始url
 </pre>
 
-请参阅 `enabled_url_rewriter_fn.html`
+h4. 不使用假图片预加载
+
+默认情况下，我们在加载图片时，会先创建一个 Image 对象（fake image）将远端的图片加载到本地，再更改真正需要此图片的元素的 src 或 background-image 属性。这样用户看上去图片不是被缓慢加载出来的，而是在立即展现，或能添加诸如 fadeIn 类的效果。
+
+但是如果图片是从某个接口动态返回的，而不是实际的一个静态文件，上述机制在某些情况下可能导致图片被加载两次（创建的Image对象会加载一次，实际DOM树中的元素设置 src 或 background-image 时又会加载一次），此时你可以将 no_fake_img_loader 参数设置为true，这样不会有 fake image 的机制，从而规避这种问题。
+
+<pre><img class="lazy" data-original="img/bmw_m1_hood.jpg" width="765" height="574"></pre>
+
+<pre>
+$("img.lazy").lazyload({
+    no_fake_img_loader:true
+})
+</pre>
+
+请参阅 `enabled_no_fake_img_loader.html`
 
 h4. options对象
 
@@ -230,35 +246,56 @@ h4. options对象
 var options = {
     // 默认情况下，图像会在出现在屏幕上时被加载。如果你想的图像更早地加载，可以使用threshold参数。设置threshold为200，将导致图像在它离视窗边缘还有200px时开始加载。
     threshold          : 0, // default: 0. 另一个例子: 200
+    
     // 在页面滚动后，该插件将所有未加载的图像循环一遍。并在循环检查图像是否在视窗中。默认情况下，发现第一个位于视窗外的图片时，循环停止。这是基于以下的假设：页面上图像的顺序与它们在HTML代码中的顺序是一致的。然而对于某些布局，这可能是错误的。你可以通过设置failure_limit参数来控制循环终止的行为（failure_limit参数的数值为最多允许多少张图片被检查出位于视窗外后停止检查循环中剩余未检查的图片）。
     failure_limit      : 0, // default: 0. 另一个例子: 10
+    
     // 指定触发什么事件时，开始加载真实的图片。你可以使用jQuery中已有的事件，如click或mouseover。你也可以使用自定义的事件如sporty或foobar。当事件是`scroll`或类似事件类型时，还需要检查图像是否已出现在视窗中。
     event              : 'scroll', // default: 'scroll'. 另一个例子: 'click'
+    
     // 默认情况下插件在等待图片完全加载后调用show()。你可以使用想要的任何效果。下面的代码使用了fadeIn效果。你可以在demo页面中查看该效果。
     effect             : 'show', // default: 'show'. 另一个例子: 'fadein'
+    
     // 上述效果（`effect`）函数的参数数组。举两个例子，如果`effect`参数设置为`show`且`effect_params`参数设置为[400]，将会调用`$element.show(400)`，即在400ms后显示图片；如果`effect`参数设置为`fadein`且`effect_params`参数设置为[400,completeFunction]，将会调用`fadein(400,completeFunction)`，即在400ms内渐入显示图片，并在渐入动画完成时调用`completeFunction`。
     effect_params      : null, // default: undefined. 另一个例子: [400].
+    
     // 你可以将改插件运用在某个容器内，如一个有滚动条的div。只需要传递容器的jQuery对象。我们有在纵向和横向滚动的容器中使用插件的两个demo。
     container          : window, // default: 'show'. 另一个例子: $('#container')
+    
     // 默认情况下，图片的真实url被设置在`data-original`属性内，你可以将它们设置在其他属性内，如`url`，这样插件将在`data-url`属性中查找图片的真实地址。
     data_attribute     : 'original', // default: 'original'. 另一个例子: 'url'
+    
     // 还存在一些小问题：你可能有不可见的图片，即使它（的位置）已在视图中。为了提高性能，插件默认忽略不可见（`($this.width() || $this.height()) && $this.css("display") !== "none")`）的图片。如果你扔想要加载这些图片，只需将skip_invisible设置为false
     skip_invisible     : true, // default: true. 另一个例子: false
+    
     // 当图片在视窗中出现时回调。`this`指向出现的图片元素的节点，参数为尚未出现的图片的数量和配置参数对象。
-    appear             : null, // default: null. 另一个例子: function(elements_left, options){}
+    appear             : function(){}, // default: `the emptyFunc`. 另一个例子: function(elements_left, options){}
+    
     // 当图片加载完毕时回调。`this`指向出现的图片元素的节点，参数为尚未出现的图片的数量和配置参数对象。
-    load               : null, // default: null. 另一个例子: function(elements_left, options){}
+    load               : function(){}, // default: `the emptyFunc`. 另一个例子: function(elements_left, options){}
+    
     // 在大多数情况下，页面只能纵向滚动。此时，只需要检查图片的竖直位置是否出现在视图中即可。如果这样做能提高性能。你可以在只能纵向滚动的页面中将`vertical_only`参数设置为true
     vertical_only      : false, // default: false. 另一个例子: true
+    
     // 在参数`event`设置为`scroll`的情况下，除了iOS以外的设备，用户一次滚屏会触发多次scroll事件，而实际上我们无需在每一次scroll事件中检查图片是否已经出现在视窗中，通过这个参数设置两次检查之间最少的间隔时间，用来提高性能。当设置为0时，则为没有最少间隔时间，每一次scroll事件触发时都检测
     minimum_interval            : 300, // default: 300. 另一个例子: 0
+    
     // 和上面那个参数相关，iOS设备上，用户一次滚屏只会触发一次scroll事件，于是没有必要规定最小的检查之间的间隔。设置为false将忽略上面的检查间隔参数`minimum_interval`，设置为true则会处理上面的间隔参数
     use_minimum_interval_in_ios : false, // default: false. 另一个例子: true
+    
+    // 重写图片的原始url。回调函数中，`this`指向出现的图片元素的节点，参数第一项为当前元素的jQuery|Zepto对象，第二项为当前元素的图片的原始url
+    url_rewriter_fn             : function(){},  // default: `the emptyFunc`. 另一个例子: function($element,originalSrcInAttr){}
+    
+    // 不使用假图片预加载（详见上面“高级”中的“不使用假图片预加载”）
+    no_fake_img_loader          : false, // default: false. 另一个例子: true
+    
     // 如果一个img元素没有指定src属性，我们使用这个placeholder。
     placeholder_data_img : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC',
+    
     // IE6/7 的 placeholder。
     placeholder_real_img : 'http://webmap3.map.bdimg.com/yyfm/lazyload/0.0.1/img/placeholder.png'
 }
+
 $("img.lazy").lazyload(options);
 </pre>
 
@@ -285,7 +322,7 @@ This project is forked from "tuupola/jquery_lazyload":https://github.com/tuupola
 * Modified many details to improve performance;
 * IE6/7 supported;
 * Available with "Zepto":https://github.com/madrobby/zepto ;
-* The `vertical_only` option, if set to true, only check images's vertical position. It can improve performance in page which can only scroll vertically.
+* `vertical_only` \ `minimum_interval` \ `use_minimum_interval_in_ios` \ `no_fake_img_loader` options.
 
 h2. Current Users
 * "百度地图":http://map.baidu.com/
@@ -426,7 +463,7 @@ $("img.lazy").lazyload({
 
 See `enabled_wide_container.html`
 
-h4. With fadein effect
+h4. With fadeIn effect
 
 <pre><img class="lazy" data-original="img/example.jpg" width="765" height="574"></pre>
 
@@ -482,7 +519,9 @@ $("img.lazy").lazyload({
 
 See `enabled_vertical_only.html`
 
-h4. rewrite image's original url (somethins, you need do something with the original url)
+h4. rewrite image's original url
+
+Somethins, you need do something with the original url
 
 <pre><img class="lazy" data-original="img/bmw_m1_hood.jpg" width="765" height="574"></pre>
 
@@ -490,18 +529,35 @@ h4. rewrite image's original url (somethins, you need do something with the orig
 $("img.lazy").lazyload({
     url_rewriter_fn:function($element,originalSrcInAttr){
         // this -> image element
-        if(originalSrcInAttr == 'img/bmw_m1_hood.jpg'){ // in the example, we change the first image's url to another
+        if(originalSrcInAttr == 'img/bmw_m1_hood.jpg'){ // in the example, we changed the first image's url to another
             return 'img/bmw_m1_hood_rewritten.jpg'
         }
         return originalSrcInAttr
     }
 })
 // the arguments for callback function
+//      `this` : currect image element node
 //      1st: currect element's jQuery|Zepto objcet
 //      2nd: currect element's original image src
 </pre>
 
 see `enabled_url_rewriter_fn.html`
+
+h4. Without fake image preload mechanism
+
+By default, when loading a image, we firtst create a Image object ( fake image ) which used to download the remote image to local, and then modify the `src` or `background-image` attribute to the real element which need the image. By doing this, the users feel like the images showing immediately or can use some dynamic effect such as `fadeIn` , rather than a slowly downloading.
+
+But if the image is returned by a dynamic interferce instead of a static file, the mechanism above may cause the image being loaded twice ( fake image object once, when setting the attribute `src` or `background-image` of the real element once more ), when this occurs, you can set the `no_fake_img_loader` parameter `true`, without the `fake image` mechanism to avoid this problem.
+
+<pre><img class="lazy" data-original="img/bmw_m1_hood.jpg" width="765" height="574"></pre>
+
+<pre>
+$("img.lazy").lazyload({
+    no_fake_img_loader:true
+})
+</pre>
+
+see `enabled_no_fake_img_loader.html`
 
 h4. The options object
 
@@ -511,35 +567,56 @@ You can use the options object as the first argument in the `lazyload` method.
 var options = {
     // By default images are loaded when they appear on the screen. If you want images to load earlier use threshold parameter. Setting threshold to 200 causes image to load 200 pixels before it appears on viewport.
     threshold          : 0, // default: 0. Another example: 200
+    
     // After scrolling page plugin loops though unloaded images. Loop checks if image has become visible. By default loop is stopped when first image outside viewport is found. This is based on following assumption. Order of images on page is same as order of images in HTML code. With some layouts assumption this might be wrong. You can control loading behaviour with failure_limit setting.
     failure_limit      : 0, // default: 0. Another example: 10
+    
     // Specified an event, when it triggers, start loading the real images. You can use jQuery event such as click or mouseover. You can also use custom events such as sporty or foobar. if the event is `scroll` or a similar type, it also need to check if the image has appeared in the viewport. Default is to wait until user scrolls down and image appears on the viewport.
     event              : 'scroll', // default: 'scroll'. Another example: 'click'
+    
     // By default plugin waits for image to fully load and calls show(). You can use any effect you want. Following code uses fadeIn effect. Check how it works at effect demo page.
     effect             : 'show', // default: 'show'. Another example: 'fadein'
+    
     // the arguments array of `effect` function. For two examples, if `effect` is set to `show` and `effect_params` is set to [400], it will call `$element.show(400)` to show the image after 400ms; if `effect` is set to `fadein` and `effect_params` is set to [400,completeFunction], it will call `$element.fadein(400,completeFunction)` to fadeIn the image in 400ms and call the `completeFunction` when the animation is complete.
     effect_params      : null, // default: undefined. Another example: [400].
+    
     // You can also use plugin for images inside scrolling container, such as div with scrollbar. Just pass the container as jQuery object. There is a demo for horizontal and vertical container.
     container          : window, // default: 'show'. Another example: $('#container')
+    
     // By default images's original url set in `data-original` attribute, you can change it to Another attribute such as `url`,so it will find the original url in `data-url` attribute.
     data_attribute     : 'original', // default: 'original'. Another example: 'url'
+    
     // There are cases when you have images which are in viewport but not visible. To improve performance plugin ignores not visible (`($this.width() || $this.height()) && $this.css("display") !== "none")`) by default. If you want to load these images set skip_invisible to false.
     skip_invisible     : true, // default: true. Another example: false
+    
     // Call when one image is appear to the viewport. The `this` is refer to the appear image element node, params are count of elements not appear yet, and the options.
-    appear             : null, // default: null. Another example: function(elements_left, options){}
+    appear             : function(){}, // default: `the emptyFunc`. Another example: function(elements_left, options){}
+    
     // Call when one image is load. The `this` is refer to the appear image element node, params are count of elements not appear yet, and the options.
-    load               : null, // default: null. Another example: function(elements_left, options){}
+    load               : function(){}, // default: `the emptyFunc`. Another example: function(elements_left, options){}
+    
     // In most situations, page can only scroll vertically.At this time, only check images's vertical position will improve performance.You can only set vertical_only to true when page can only scroll vertically.
     vertical_only      : false, // default: false. Another example: true
+    
     // When the option `event` is set to `scroll`, in addition to iOS devices, the scroll event will trigger several times in once user scrolling, but in fact we do not need to check if the images should apper in every scroll event , set the minimum interval between checks can improve performance. When set to `0`, it will check in every scroll event
     minimum_interval   : 300, // default: 300. Another example: 0
+    
     // When the option `event` is set to `scroll`, in iOS devices, the scroll event will trigger only one time in once user scrolling，so there is no need to use the `minimum_interval` option。set `false` will not use the `minimum_interval` option, set to `true` will use
     use_minimum_interval_in_ios : false, // default: false. Another example: true
+    
+    // rewrite image's original url. the arguments for callback function: `this` : currect image element node, 1st: currect element's jQuery|Zepto objcet, 2nd: currect element's original image src
+    url_rewriter_fn             : function(){},  // default: `the emptyFunc`. Another example: function($element,originalSrcInAttr){}
+    
+    // Without fake image preload mechanism（See details above）
+    no_fake_img_loader          : false, // default: false. Another example: true
+
     // If element is an img and no src attribute given, use placeholder. 
     placeholder_data_img : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC',
+    
     // Placeholder for IE6/7
     placeholder_real_img : 'http://ditu.baidu.cn/yyfm/lazyload/0.0.1/img/placeholder.png'
 }
+
 $("img.lazy").lazyload(options);
 </pre>
 

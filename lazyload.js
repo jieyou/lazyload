@@ -20,6 +20,7 @@
             minimum_interval            : 300,
             use_minimum_interval_in_ios : false,
             url_rewriter_fn             : emptyFn,
+            no_fake_img_loader          : false,
             placeholder_data_img        : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC',
             // for IE6\7 that does not support data image
             placeholder_real_img        : 'http://ditu.baidu.cn/yyfm/lazyload/0.0.1/img/placeholder.png'
@@ -193,32 +194,44 @@
             $element.one('_lazyload_appear',function(){
                 var effectParamsIsArray = $.isArray(options.effect_params),
                     effectIsNotImmediacyShow
+                function loadFunc(){
+                    // In most situations, the effect is immediacy show, at this time there is no need to hide element first
+                    // Hide this element may cause css reflow, call it as less as possible
+                    if(effectIsNotImmediacyShow){
+                        // todo: opacity:0 for fadeIn effect
+                        $element.hide()
+                    }
+                    if(isImg){
+                        $element.attr('src', originalSrc)
+                    }else{
+                        $element.css('background-image','url("' + originalSrc + '")')
+                    }
+                    if(effectIsNotImmediacyShow){
+                        $element[options.effect].apply($element,effectParamsIsArray?options.effect_params:[])
+                    }
+                    $elements = getUnloadElements($elements)
+                }
                 if(!$element._lazyload_loadStarted){
-                    effectIsNotImmediacyShow = (options.effect != 'show' && $.fn[options.effect] &&  (!options.effect_params || (effectParamsIsArray && options.effect_params.length == 0)))
+                    effectIsNotImmediacyShow = (options.effect != 'show' && $.fn[options.effect] && (!options.effect_params || (effectParamsIsArray && options.effect_params.length == 0)))
                     if(options.appear != emptyFn){
                         options.appear.call(element, $elements.length, options)
                     }
                     $element._lazyload_loadStarted = true
-                    $('<img />').one('load', function(){ // `on` -> `one` : IE6 triggered twice load event sometimes
-                        // In most situations, the effect is immediacy show, at this time there is no need to hide element first
-                        // Hide this element may cause css reflow, call it as less as possible
-                        if(effectIsNotImmediacyShow){
-                            // todo: opacity:0 for fadeIn effect
-                            $element.hide()
-                        }
-                        if(isImg){
-                            $element.attr('src', originalSrc)
-                        }else{
-                            $element.css('background-image','url("' + originalSrc + '")')
-                        }
-                        if(effectIsNotImmediacyShow){
-                            $element[options.effect].apply($element,effectParamsIsArray?options.effect_params:[])
-                        }
-                        $elements = getUnloadElements($elements)
+                    if(options.no_fake_img_loader){
                         if(options.load != emptyFn){
-                            options.load.call(element, $elements.length, options)
+                            $element.one('load',function(){
+                                options.load.call(element, $elements.length, options)
+                            })
                         }
-                    }).attr('src',originalSrc)
+                        loadFunc()
+                    }else{
+                        $('<img />').one('load', function(){ // `on` -> `one` : IE6 triggered twice load event sometimes
+                            loadFunc()
+                            if(options.load != emptyFn){
+                                options.load.call(element, $elements.length, options)
+                            }
+                        }).attr('src',originalSrc)
+                    }
                 }
             })
 

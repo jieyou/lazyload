@@ -43,16 +43,17 @@
   <div class="container">
     <div class="col-md-10 col-lg-8 col-md-offset-1 col-lg-offset-2">
       
-      <h2>Plugin enabled</h2>
+      <h2>Plugin enabled width no fake img loader</h2>
       <p>
-        Images below the fold (the ones lower than window bottom) are not loaded. When scrolling down
-        they are loaded when needed. Empty cache and shift-reload to test again. Compare this to page 
-        where plugin is <a href="disabled.html">disabled</a>, same page with 
-        <a href="enabled_fadein.html">fadein effect</a>,  page with <a href="enabled_wide.html">wide 
-        layout</a> or wide content <a href="enabled_wide_container.html">inside container</a>.
+By default, when loading a image, we firtst create a Image object ( fake image ) which used to download the remote image to local, and then modify the `src` or `background-image` attribute to the real element which need the image. By doing this, the users feel like the images showing immediately or can use some dynamic effect such as `fadeIn` , rather than a slowly downloading.
+      </p>
+      <p>
+But if the image is returned by a dynamic interferce instead of a static file, the mechanism above may cause the image being loaded twice ( fake image object once, when setting the attribute `src` or `background-image` of the real element once more ), when this occurs, you can set the `no_fake_img_loader` parameter `true`, without the `fake image` mechanism to avoid this problem.
       </p>
 
-      <pre class="prettyprint">$("img.lazy").lazyload();</pre>
+      <pre class="prettyprint">$("img.lazy").lazyload({
+  no_fake_img_loader:true
+})</pre>
       <pre class="prettyprint">&lt;img class="lazy" data-original="img/example.jpg" width="765" height="574"&gt;</pre>
 
       <div id="container">
@@ -74,11 +75,10 @@
   <script src="page_js/demo.js"></script>
   <script type="text/javascript" charset="utf-8">
   $(function() {
-     // $("img.lazy").lazyload({
-     //  'load':function(){alert(1)},
-     //  'appear':function(){alert(2)}
-     // });
-    $("img.lazy").lazyload({})
+    $("img.lazy").lazyload({
+      no_fake_img_loader:true
+      //,load:function(){alert(1)}
+    })
   });
   </script>
 </body>
