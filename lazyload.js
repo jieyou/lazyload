@@ -3,15 +3,25 @@
  * contacts:baidu hi->youyo1122
  * see https://github.com/jieyou/lazyload
  */
-;(function($,window,undefined){
-    var $window = $(window),
+;(function(factory){
+    if(typeof define === 'function' && define.amd){ // AMD
+        // you may need to change `define([------>'jquery'<------], factory)` 
+        // if you use zepto, change it rely name, such as `define(['zepto'], factory)`
+        // if your jquery|zepto lib is in other path, change it such as `define(['lib\jquery.min'], factory)`
+        define(['jquery'], factory)
+    }else{ // Global
+        factory(jQuery || Zepto)
+    }
+})(function($,undefined){
+    var w = window,
+        $window = $(w),
         defaultOptions = {
             threshold                   : 0,
             failure_limit               : 0,
             event                       : 'scroll',
             effect                      : 'show',
             effect_params               : null,
-            container                   : window,
+            container                   : w,
             data_attribute              : 'original',
             skip_invisible              : true,
             appear                      : emptyFn,
@@ -42,7 +52,7 @@
     function belowthefold($element, options){
         var fold
         if(options._$container == $window){
-            fold = (window.innerHeight ? window.innerHeight : $window.height()) + $window.scrollTop()
+            fold = ('innerHeight' in w ? w.innerHeight : $window.height()) + $window.scrollTop()
         }else{
             fold = options._$container.offset().top + $(options.container).height()
         }
@@ -53,7 +63,7 @@
         var fold
         if(options._$container == $window){
             // Zepto do not support `$window.scrollLeft()` yet.
-            fold = $window.width() + ($.fn.scrollLeft?$window.scrollLeft():window.pageXOffset)
+            fold = $window.width() + ($.fn.scrollLeft?$window.scrollLeft():w.pageXOffset)
         }else{
             fold = options._$container.offset().left + $(options.container).width()
         }
@@ -76,7 +86,7 @@
         var fold
         if(options._$container == $window){
             // Zepto do not support `$window.scrollLeft()` yet.
-            fold = $.fn.scrollLeft?$window.scrollLeft():window.pageXOffset
+            fold = $.fn.scrollLeft?$window.scrollLeft():w.pageXOffset
         }else{
             fold = options._$container.offset().left
         }
@@ -156,7 +166,7 @@
         })
 
         // Cache container as jQuery as object. 
-        $container = options._$container = (!options.container || options.container == window) ? $window : $(options.container)
+        $container = options._$container = (!options.container || options.container == w) ? $window : $(options.container)
         delete options.container
 
         isScrollEvent = options.event == 'scroll'
@@ -287,5 +297,4 @@
         
         return this
     }
-
-})(window.jQuery||window.Zepto, window)
+})

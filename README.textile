@@ -238,6 +238,18 @@ $("img.lazy").lazyload({
 
 请参阅 `enabled_no_fake_img_loader.html`
 
+h4. 与AMD模块加载器（如requirejs）一起使用
+
+<pre><img class="lazy" data-original="img/bmw_m1_hood.jpg" width="765" height="574"></pre>
+
+<pre>
+require(['jquery','../lazyload'],function($){
+  $(".lazy").lazyload()
+})
+</pre>
+
+请参阅 `enabled_amd.html`
+
 h4. options对象
 
 你可以将options对象当做`lazyload`方法的第一个参数来使用。
@@ -558,6 +570,18 @@ $("img.lazy").lazyload({
 </pre>
 
 see `enabled_no_fake_img_loader.html`
+
+h4. with AMD loader (such as `requirejs`)
+
+<pre><img class="lazy" data-original="img/bmw_m1_hood.jpg" width="765" height="574"></pre>
+
+<pre>
+require(['jquery','../lazyload'],function($){
+  $(".lazy").lazyload()
+})
+</pre>
+
+see `enabled_amd.html`
 
 h4. The options object
 

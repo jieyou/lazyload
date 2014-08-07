@@ -1,3 +1,6 @@
 .jumbotron .des{
 	color: #fff;
 }
+pre.prettyprint{
+	background-color: inherit;
+}
