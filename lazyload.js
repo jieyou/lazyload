@@ -12,7 +12,7 @@
     }else{ // Global
         factory(jQuery || Zepto)
     }
-})(function($,undefined){
+})(function($ , undefined){
     var w = window,
         $window = $(w),
         defaultOptions = {
