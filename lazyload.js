@@ -10,7 +10,7 @@
         // if your jquery|zepto lib is in other path, change it such as `define(['lib\jquery.min'], factory)`
         define(['jquery'], factory)
     }else{ // Global
-        factory(jQuery || Zepto)
+        factory(window.jQuery || window.Zepto)
     }
 })(function($,undefined){
     var w = window,
