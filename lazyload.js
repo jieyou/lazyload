@@ -2,7 +2,7 @@
  * author:jieyou
  * contacts:baidu hi->youyo1122
  * see https://github.com/jieyou/lazyload
- * part of the code fork form tuupola's https://github.com/tuupola/jquery_lazyload
+ * part of the code fork from tuupola's https://github.com/tuupola/jquery_lazyload
  */
 ;(function(factory){
     if(typeof define === 'function' && define.amd){ // AMD
