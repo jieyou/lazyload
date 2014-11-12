@@ -2,6 +2,7 @@
  * author:jieyou
  * contacts:baidu hi->youyo1122
  * see https://github.com/jieyou/lazyload
+ * part of the code fork form tuupola's https://github.com/tuupola/jquery_lazyload
  */
 ;(function(factory){
     if(typeof define === 'function' && define.amd){ // AMD
@@ -23,6 +24,7 @@
             effect_params               : null,
             container                   : w,
             data_attribute              : 'original',
+            data_srcset_attribute       : 'original-srcset',
             skip_invisible              : true,
             appear                      : emptyFn,
             load                        : emptyFn,
@@ -182,6 +184,7 @@
                 originalSrc = options.url_rewriter_fn == emptyFn?
                     originalSrcInAttr:
                     options.url_rewriter_fn.call(element,$element,originalSrcInAttr),
+                originalSrcset = $element.attr('data-'+options.data_srcset_attribute),
                 isImg = $element.is('img')
 
             if($element._lazyload_loadStarted == true || placeholderSrc == originalSrc){
@@ -212,7 +215,13 @@
                         $element.hide()
                     }
                     if(isImg){
-                        $element.attr('src', originalSrc)
+                        // attr srcset first
+                        if(originalSrcset){
+                            $element.attr('srcset', originalSrcset)
+                        }
+                        if(originalSrc){
+                            $element.attr('src', originalSrc)
+                        }
                     }else{
                         $element.css('background-image','url("' + originalSrc + '")')
                     }
@@ -227,7 +236,7 @@
                         options.appear.call(element, $elements.length, options)
                     }
                     $element._lazyload_loadStarted = true
-                    if(options.no_fake_img_loader){
+                    if(options.no_fake_img_loader || originalSrcset){
                         if(options.load != emptyFn){
                             $element.one('load',function(){
                                 options.load.call(element, $elements.length, options)

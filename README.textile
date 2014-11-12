@@ -228,6 +228,8 @@ h4. 不使用假图片预加载
 
 但是如果图片是从某个接口动态返回的，而不是实际的一个静态文件，上述机制在某些情况下可能导致图片被加载两次（创建的Image对象会加载一次，实际DOM树中的元素设置 src 或 background-image 时又会加载一次），此时你可以将 no_fake_img_loader 参数设置为true，这样不会有 fake image 的机制，从而规避这种问题。
 
+请注意 "与srcset属性一起使用":#%E4%B8%8Esrcset%E5%B1%9E%E6%80%A7%E4%B8%80%E8%B5%B7%E4%BD%BF%E7%94%A8 时，则一定会开启“不使用假图片预加载”，而无论你设置的no_fake_img_loader的值是true还是false。
+
 <pre><img class="lazy" data-original="img/bmw_m1_hood.jpg" width="765" height="574"></pre>
 
 <pre>
@@ -249,6 +251,18 @@ require(['jquery','../lazyload'],function($){
 </pre>
 
 请参阅 `enabled_amd.html`
+
+h4. 与srcset属性一起使用
+
+更多详情请见 `enabled_srcset.html`
+
+<pre><img class="lazy" data-original="img/bmw_m1_hood.jpg" data-original-srcset="img/bmw_m1_hood.jpg 765w" sizes="765px" width="765" height="574"></pre>
+
+<pre>
+$("img.lazy").lazyload()
+</pre>
+
+请参阅 `enabled_srcset.html`
 
 h4. options对象
 
@@ -274,10 +288,13 @@ var options = {
     // 你可以将改插件运用在某个容器内，如一个有滚动条的div。只需要传递容器的jQuery对象。我们有在纵向和横向滚动的容器中使用插件的两个demo。
     container          : window, // default: 'show'. 另一个例子: $('#container')
     
-    // 默认情况下，图片的真实url被设置在`data-original`属性内，你可以将它们设置在其他属性内，如`url`，这样插件将在`data-url`属性中查找图片的真实地址。
+    // 默认情况下，图片的真实url被设置在`data-original`属性内，你可以通过修改下面这个值来改变这个属性名（如`url`，这样插件将在`data-url`属性中查找图片的真实地址）注意下面这个值是不用包含`data-`头的。
     data_attribute     : 'original', // default: 'original'. 另一个例子: 'url'
+
+    // 当你将图片懒加载技术与`srcset`一起使用时，你不能将`srcset`的值直接写在`srcset`内，否则会导致图片立即加载。默认情况下，你应该写在属性`data-original-srcset`内，这样lazyload插件会帮你在合适的时候将它的赋值到`srcset`上。你可以通过修改下面这个值来改变这个属性名。注意下面这个值是不用包含`data-`头的。
+    data_srcset_attribute     : 'original-srcset', // default: 'original-srcset'. 另一个例子: 'o-srcset'
     
-    // 还存在一些小问题：你可能有不可见的图片，即使它（的位置）已在视图中。为了提高性能，插件默认忽略不可见（`($this.width() || $this.height()) && $this.css("display") !== "none")`）的图片。如果你扔想要加载这些图片，只需将skip_invisible设置为false
+    // 你可能有不可见的图片，即使它（的位置）已在视图中。为了提高性能，插件默认忽略不可见（`($this.width() || $this.height()) && $this.css("display") !== "none")`）的图片。如果你扔想要加载这些图片，只需将skip_invisible设置为false
     skip_invisible     : true, // default: true. 另一个例子: false
     
     // 当图片在视窗中出现时回调。`this`指向出现的图片元素的节点，参数为尚未出现的图片的数量和配置参数对象。
@@ -533,7 +550,7 @@ See `enabled_vertical_only.html`
 
 h4. rewrite image's original url
 
-Somethins, you need do something with the original url
+Sometimes, you need do something with the original url
 
 <pre><img class="lazy" data-original="img/bmw_m1_hood.jpg" width="765" height="574"></pre>
 
@@ -561,6 +578,8 @@ By default, when loading a image, we firtst create a Image object ( fake image )
 
 But if the image is returned by a dynamic interferce instead of a static file, the mechanism above may cause the image being loaded twice ( fake image object once, when setting the attribute `src` or `background-image` of the real element once more ), when this occurs, you can set the `no_fake_img_loader` parameter `true`, without the `fake image` mechanism to avoid this problem.
 
+Note that if use the `srcset` attribute, will enabled no_fake_img_loader, regardless of the value of this option is true or false.
+
 <pre><img class="lazy" data-original="img/bmw_m1_hood.jpg" width="765" height="574"></pre>
 
 <pre>
@@ -582,6 +601,18 @@ require(['jquery','../lazyload'],function($){
 </pre>
 
 see `enabled_amd.html`
+
+h4. with `srcset` attribute
+
+more details on `enabled_srcset.html`
+
+<pre><img class="lazy" data-original="img/bmw_m1_hood.jpg" data-original-srcset="img/bmw_m1_hood.jpg 765w" sizes="765px" width="765" height="574"></pre>
+
+<pre>
+$("img.lazy").lazyload()
+</pre>
+
+see `enabled_srcset.html`
 
 h4. The options object
 
@@ -607,10 +638,13 @@ var options = {
     // You can also use plugin for images inside scrolling container, such as div with scrollbar. Just pass the container as jQuery object. There is a demo for horizontal and vertical container.
     container          : window, // default: 'show'. Another example: $('#container')
     
-    // By default images's original url set in `data-original` attribute, you can change it to Another attribute such as `url`,so it will find the original url in `data-url` attribute.
+    // By default images's original url set in `data-original` attribute, you can change it to Another attribute (such as `url`,so it will find the original url in `data-url` attribute). You can modify the following option's values to change the attribute name. Note that this value is not include `data-` prefix.
     data_attribute     : 'original', // default: 'original'. Another example: 'url'
+
+    // when use with `srcset` attribute ，you can not directly write the value of` srcset` in `srcset` attribute，otherwise it will cause the image immediately loaded。By default, you can write in the attribute `data-original-srcset` , so the lazyload plugin will help you at the right time it is assigned to the` srcset` attribute . You can modify the following option's values to change the attribute name. Note that this value is not include `data-` prefix.
+    data_srcset_attribute     : 'original-srcset', // default: 'original-srcset'. Another example: 'o-srcset'
     
-    // There are cases when you have images which are in viewport but not visible. To improve performance plugin ignores not visible (`($this.width() || $this.height()) && $this.css("display") !== "none")`) by default. If you want to load these images set skip_invisible to false.
+    // when you have images which are in viewport but not visible. To improve performance plugin ignores not visible (`($this.width() || $this.height()) && $this.css("display") !== "none")`) by default. If you want to load these images set skip_invisible to false.
     skip_invisible     : true, // default: true. Another example: false
     
     // Call when one image is appear to the viewport. The `this` is refer to the appear image element node, params are count of elements not appear yet, and the options.

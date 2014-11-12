@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta charset="utf-8">
-  <title>Lazy Load Enabled With Noscript Fallback</title>
+  <title>Lazy Load Enabled</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link type="text/css" media="screen" href="css/appelsiini.css" rel="stylesheet">
   <link href="css/font-awesome.min.css" rel="stylesheet"><link href="css/jieyou.css" rel="stylesheet">
@@ -14,10 +14,6 @@
   <style type="text/css">
     .container img {
       margin-bottom: 10px;
-    }
-    
-    .lazy {
-      display: none;
     }
   </style>
 </head>
@@ -46,41 +42,24 @@
   <div class="container">
     <div class="col-md-10 col-lg-8 col-md-offset-1 col-lg-offset-2">
       
-      <h2>Plugin enabled with noscript fallback</h2>
+      <h2>Plugin enabled width `srcset`</h2>
       <p>
-        This page deprecates gracefully for non JavaScript browsers. It requires hiding 
-        lazy loaded images with css and adding a &lt;noscript&gt; block which contains
-        the real image and it is shown when JavaScript is not enabled. If JavaScript is enabled
-        show() function is called before initializing Lazy Load plugin.
+        About `srcset` : <a href="http://www.matthew-steele.com/responsive-images-picture-srcset/">video</a>|<a href="http://www.w3.org/html/wg/drafts/html/master/embedded-content.html#attr-img-srcset">w3c</a> .<br>
+        Use `data-original-srcset` attribute instead of `srcset` , so images can lazyload .<br>
+        If you want browsers not support `srcset` to work well , add `data-original` at the same time .
       </p>
 
-      <pre class="prettyprint">.lazy {
-    display: none;
-}</pre>
+      <pre class="prettyprint">$("img.lazy").lazyload();</pre>
+      <pre class="prettyprint">&lt;img class="lazy" data-original="img/bmw_m1_hood.jpg" data-original-srcset="img/bmw_m1_hood.jpg 765w" sizes="765px" width="765" height="574"&gt;</pre>
 
-      <pre class="prettyprint">$("img.lazy").show().lazyload({
-    effect : "fadeIn"
-});</pre>
-
-      <pre class="prettyprint">&lt;img class="lazy" src="img/grey.gif" data-original="img/example.jpg" width="765" height="574"&gt;
-     &lt;noscript&gt;&lt;img src="img/example.jpg" width="765" height="574"&gt;&lt;/noscript&gt;</pre>
-
-      <img class="lazy img-responsive" data-original="img/bmw_m1_hood.jpg" width="765" height="574" alt="BMW M1 Hood"><br/>
-      <img class="lazy img-responsive" data-original="img/bmw_m1_side.jpg" width="765" height="574" alt="BMW M1 Side"><br/>
-      <img class="lazy img-responsive" data-original="img/viper_1.jpg" width="765" height="574" alt="Viper 1"><br/>
-      <img class="lazy img-responsive" data-original="img/viper_corner.jpg" width="765" height="574" alt="Viper Corner"><br/>
-      <img class="lazy img-responsive" data-original="img/bmw_m3_gt.jpg" width="765" height="574" alt="BMW M3 GT"><br/>
-      <img class="lazy img-responsive" data-original="img/corvette_pitstop.jpg" width="765" height="574" alt="Corvette Pitstop"><br/>      
-
-      <noscript>
-        <img class="img-responsive" src="img/bmw_m1_hood.jpg" width="765" height="574" alt="BMW M1 Hood">
-        <img class="img-responsive" src="img/bmw_m1_side.jpg" width="765" height="574" alt="BMW M1 Side">
-        <img class="img-responsive" src="img/viper_1.jpg" width="765" height="574" alt="Viper 1">
-        <img class="img-responsive" src="img/viper_corner.jpg" width="765" height="574" alt="Viper Corner">
-        <img class="img-responsive" src="img/bmw_m3_gt.jpg" width="765" height="574" alt="BMW M3 GT">
-        <img class="img-responsive" src="img/corvette_pitstop.jpg" width="765" height="574" alt="Corvette Pitstop">
-      </noscript>
-
+      <div id="container">
+        <img class="lazy img-responsive" src="img/grey.gif" data-original-srcset="img/bmw_m1_hood.jpg 765w" sizes="765px" width="765" height="574" alt="BMW M1 Hood"><br/>
+        <img class="lazy img-responsive" src="img/grey.gif" data-original-srcset="img/bmw_m1_side.jpg 765w" sizes="765px" width="765" height="574" alt="BMW M1 Hood"><br/>
+        <img class="lazy img-responsive" src="img/grey.gif" data-original-srcset="img/viper_1.jpg 765w" sizes="765px" width="765" height="574" alt="BMW M1 Hood"><br/>
+        <img class="lazy img-responsive" src="img/grey.gif" data-original-srcset="img/viper_corner.jpg 765w" sizes="765px" width="765" height="574" alt="BMW M1 Hood"><br/>
+        <img class="lazy img-responsive" src="img/grey.gif" data-original-srcset="img/bmw_m3_gt.jpg 765w" sizes="765px" width="765" height="574" alt="BMW M1 Hood"><br/>
+        <img class="lazy img-responsive" src="img/grey.gif" data-original-srcset="img/corvette_pitstop.jpg 765w" sizes="765px" width="765" height="574" alt="BMW M1 Hood"><br/>
+      </div>
     </div>
   </div>
   
@@ -92,9 +71,11 @@
   <!-- <script src="page_js/demo.js"></script> -->
   <script type="text/javascript" charset="utf-8">
   $(function() {
-    $("img.lazy").show().lazyload({
-       effect      : "fadeIn"
-    });
+     // $("img.lazy").lazyload({
+     //  'load':function(){alert(1)},
+     //  'appear':function(){alert(2)}
+     // });
+    $("img.lazy").lazyload()
   });
   </script>
 </body>
