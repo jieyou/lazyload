@@ -16,11 +16,6 @@ h2. 基于jQuery或Zepto的图片延迟加载插件
 * 可以基于 "Zepto":https://github.com/madrobby/zepto 使用，而不是只能基于jQuery;
 * `vertical_only` 、 `minimum_interval` 、 `use_minimum_interval_in_ios` 、`no_fake_img_loader` 等额外的选项。
 
-h2. 当前用户
-* "百度地图":http://map.baidu.com/
-* "百度团购":http://tuan.baidu.com/
-* +You
-
 h2. 如何使用?
 
 h3. Basic

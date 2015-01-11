@@ -1,6 +1,5 @@
 /*!
  * author:jieyou
- * contacts:baidu hi->youyo1122
  * see https://github.com/jieyou/lazyload
  * part of the code fork from tuupola's https://github.com/tuupola/jquery_lazyload
  */
