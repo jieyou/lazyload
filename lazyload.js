@@ -56,7 +56,7 @@
         if(options._$container == $window){
             fold = ('innerHeight' in w ? w.innerHeight : $window.height()) + $window.scrollTop()
         }else{
-            fold = options._$container.offset().top + $(options.container).height()
+            fold = options._$container.offset().top + options._$container.height()
         }
         return fold <= $element.offset().top - options.threshold
     }
@@ -67,7 +67,7 @@
             // Zepto do not support `$window.scrollLeft()` yet.
             fold = $window.width() + ($.fn.scrollLeft?$window.scrollLeft():w.pageXOffset)
         }else{
-            fold = options._$container.offset().left + $(options.container).width()
+            fold = options._$container.offset().left + options._$container.width()
         }
         return fold <= $element.offset().left - options.threshold
     }
@@ -146,7 +146,6 @@
 
         $.fn.lazyload = function(options){
             var $elements = this,
-                $container,
                 isScrollEvent,
                 isScrollTypeEvent,
                 scrollTimer = null,
@@ -156,22 +155,28 @@
                 options = {}
             }
 
-            // following params can be a string
-            $.each(['threshold','failure_limit','minimum_interval'],function(i,e){
-                if(type(options[e]) == 'String'){
-                    options[e] = parseInt(options[e],10)
-                }
-            })
-
             $.each(defaultOptions,function(k,v){
-                if(defaultOptions.hasOwnProperty(k) && (!options.hasOwnProperty(k) || (type(options[k]) != type(defaultOptions[k])))){
+                if($.inArray(k,['threshold','failure_limit','minimum_interval']) != -1){ // these params can be a string
+                    if(type(options[k]) == 'String'){
+                        options[k] = parseInt(options[k],10)
+                    }else{
+                        options[k] = v
+                    }
+                }else if(k == 'container'){ // options.container can be a seletor string \ dom \ jQuery object
+                    if(options.hasOwnProperty(k)){   
+                        if(options[k] == w || options[k] == document){
+                            options._$container = $window
+                        }else{
+                            options._$container = $(options[k])
+                        }
+                    }else{
+                        options._$container = $window
+                    }
+                    delete options.container
+                }else if(defaultOptions.hasOwnProperty(k) && (!options.hasOwnProperty(k) || (type(options[k]) != type(defaultOptions[k])))){
                     options[k] = v
                 }
             })
-
-            // Cache container as jQuery as object. 
-            $container = options._$container = (!options.container || options.container == w) ? $window : $(options.container)
-            delete options.container
 
             isScrollEvent = options.event == 'scroll'
 
@@ -270,7 +275,7 @@
             // Fire one scroll event per scroll. Not one scroll event per image. 
             if(isScrollTypeEvent){
                 hasMinimumInterval = options.minimum_interval != 0
-                $container.on(options.event, function(){
+                options._$container.on(options.event, function(){
                     // desktop and Android device triggered many times `scroll` event in once user scrolling
                     if(isScrollEvent && hasMinimumInterval && (!isIOS || options.use_minimum_interval_in_ios)){
                         if(!scrollTimer){
