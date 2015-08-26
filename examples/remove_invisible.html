@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta charset="utf-8">
+  <title>Lazy Load Enabled</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link type="text/css" media="screen" href="css/appelsiini.css" rel="stylesheet">
+  <link href="css/font-awesome.min.css" rel="stylesheet"><link href="css/jieyou.css" rel="stylesheet">
+  <!--[if lt IE 9]>
+    <script src="page_js/html5shiv.js"></script>
+  <![endif]-->
+  
+  <style type="text/css">
+    .container img {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="jumbotron">
+    <div class="container">
+      <div class="col-md-10 col-lg-8 col-md-offset-1 col-lg-offset-2">
+        <h1>lazyload Plugin for jQuery | Zepto</h1>
+        <p class="des">
+          <!--<iframe src="http://ghbtns.com/github-btn.html?user=tuupola&amp;repo=jquery_lazyload&amp;type=watch&amp;count=true&amp;size=small" allowtransparency="true" frameborder="0" scrolling="0" width="92" height="30"></iframe>    
+          <iframe src="http://ghbtns.com/github-btn.html?user=tuupola&amp;repo=jquery_lazyload&amp;type=fork&amp;count=true&amp;size=small" allowtransparency="true" frameborder="0" scrolling="0" width="90" height="30"></iframe>-->
+          This project is forked from <a href="https://github.com/tuupola/jquery_lazyload"><span class="label label-danger">tuupola/jquery_lazyload</span></a> and add features below:<br/>
+          * Many Details for improve performance;<br/>
+          * IE6/7 support;<br/>
+          * Available with <a href="https://github.com/madrobby/zepto"><span class="label label-danger">Zepto</span></a>;<br/>
+          * `vertical_only` \ `minimum_interval` \ `use_minimum_interval_in_ios` \ `no_fake_img_loader` options.
+        </p>
+        <p class="des">
+          More information on <a href="https://github.com/jieyou/lazyload"><span class="label label-danger">jieyou/lazyload</span></a>.
+        </p>
+      </div>
+    </div>
+  </div>
+   
+  <div class="container">
+    <div class="col-md-10 col-lg-8 col-md-offset-1 col-lg-offset-2">
+      
+      <h2>Plugin enabled</h2>
+      <p>
+        Images below the fold (the ones lower than window bottom) are not loaded. When scrolling down
+        they are loaded when needed. Empty cache and shift-reload to test again. Compare this to page 
+        where plugin is <a href="disabled.html">disabled</a>, same page with 
+        <a href="enabled_fadein.html">fadein effect</a>,  page with <a href="enabled_wide.html">wide 
+        layout</a> or wide content <a href="enabled_wide_container.html">inside container</a>.
+      </p>
+
+      <pre class="prettyprint">$("img.lazy").lazyload();</pre>
+      <pre class="prettyprint">&lt;img class="lazy" data-original="img/example.jpg" width="765" height="574"&gt;</pre>
+
+      <div id="container">
+        <img class="lazy img-responsive" src="img/grey.gif" data-original="img/bmw_m1_hood.jpg" width="765" height="574" alt="BMW M1 Hood"><br/>
+        <img class="lazy img-responsive" src="img/grey.gif" data-original="img/bmw_m1_side.jpg" width="765" height="574" alt="BMW M1 Side"><br/>
+        <img class="lazy img-responsive" src="img/grey.gif" data-original="img/viper_1.jpg" width="765" height="574" alt="Viper 1"><br/>
+        <img class="lazy img-responsive" src="img/grey.gif" data-original="img/viper_corner.jpg" width="765" height="574" alt="Viper Corner"><br/>
+        <img class="lazy img-responsive" src="img/grey.gif" data-original="img/bmw_m3_gt.jpg" width="765" height="574" alt="BMW M3 GT"><br/>
+        <img class="lazy img-responsive" src="img/grey.gif" data-original="img/corvette_pitstop.jpg" width="765" height="574" alt="Corvette Pitstop" style="display: none"><br/>  
+        <button id="showInvisible">show</button>    
+      </div>
+    </div>
+  </div>
+  
+  
+
+  <script src="http://webmap2.map.bdimg.com/yyfm/jQuery_1.x/1.10.2/js/jQuery_1.x.min.js"></script>
+  <!-- <script src="http://webmap2.map.bdimg.com/yyfm/zepto_default/1.0/js/zepto_default.min.js"></script> -->
+  <script src="../lazyload.js"></script>
+  <!-- <script src="page_js/demo.js"></script> -->
+  <script type="text/javascript" charset="utf-8">
+  $(function() {
+     // $("img.lazy").lazyload({
+     //  'load':function(){alert(1)},
+     //  'appear':function(){alert(2)}
+     // });
+    $("img.lazy").lazyload()
+    $('#showInvisible').on('click', function() {
+      $('.lazy:last').css('display', 'block')
+    })
+
+  });
+  </script>
+</body>
+</html>
