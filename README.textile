@@ -289,9 +289,6 @@ var options = {
     // 当你将图片懒加载技术与`srcset`一起使用时，你不能将`srcset`的值直接写在`srcset`内，否则会导致图片立即加载。默认情况下，你应该写在属性`data-original-srcset`内，这样lazyload插件会帮你在合适的时候将它的赋值到`srcset`上。你可以通过修改下面这个值来改变这个属性名。注意下面这个值是不用包含`data-`头的。
     data_srcset_attribute     : 'original-srcset', // default: 'original-srcset'. 另一个例子: 'o-srcset'
     
-    // 你可能有不可见的图片，即使它（的位置）已在视图中。为了提高性能，插件默认忽略不可见（`($this.width() || $this.height()) && $this.css("display") !== "none")`）的图片。如果你扔想要加载这些图片，只需将skip_invisible设置为false
-    skip_invisible     : true, // default: true. 另一个例子: false
-    
     // 当图片在视窗中出现时回调。`this`指向出现的图片元素的节点，参数为尚未出现的图片的数量和配置参数对象。
     appear             : function(){}, // default: `the emptyFunc`. 另一个例子: function(elements_left, options){}
     
@@ -322,6 +319,10 @@ var options = {
 
 $("img.lazy").lazyload(options);
 </pre>
+
+h4. 移除skip_invisible属性
+
+由于display:none时，jQuery/Zepto中的`$(selector).offset().top/left`属性始终为0( "链接":http://bugs.jquery.com/ticket/3037 )，因此该属性为false并且图片一开始display:none时，由于无法得到该标签距离文档顶部的实际像素数，图片在一开始就会被加载上来，违背了lazyload的初衷。因此该版本中删掉了该属性。lazyload不会去管display:none的图片，可能会出现当将display:none改变为其它值，图片仍然没有被加载的情况，但是只要滑动滚轮触发scroll或event中设定的事件，图片还是可以被加载出来的，examples中的remove_invisible.html展示了这一场景
 
 h2. License
 
@@ -639,9 +640,6 @@ var options = {
     // when use with `srcset` attribute ，you can not directly write the value of` srcset` in `srcset` attribute，otherwise it will cause the image immediately loaded。By default, you can write in the attribute `data-original-srcset` , so the lazyload plugin will help you at the right time it is assigned to the` srcset` attribute . You can modify the following option's values to change the attribute name. Note that this value is not include `data-` prefix.
     data_srcset_attribute     : 'original-srcset', // default: 'original-srcset'. Another example: 'o-srcset'
     
-    // when you have images which are in viewport but not visible. To improve performance plugin ignores not visible (`($this.width() || $this.height()) && $this.css("display") !== "none")`) by default. If you want to load these images set skip_invisible to false.
-    skip_invisible     : true, // default: true. Another example: false
-    
     // Call when one image is appear to the viewport. The `this` is refer to the appear image element node, params are count of elements not appear yet, and the options.
     appear             : function(){}, // default: `the emptyFunc`. Another example: function(elements_left, options){}
     
@@ -672,6 +670,10 @@ var options = {
 
 $("img.lazy").lazyload(options);
 </pre>
+
+h4. The removal of skip_invisible attribute
+
+`$(selector).offset().top/left` are always zero( "link":http://bugs.jquery.com/ticket/3037 ) when `display:none` is set. As we can't get real offset of the element, the picture is always loaded when we set both `display:none` and 'skip_invisible = false'. It go against the intention of lazyload, so we decide to remove this attribute from options. lazyload will ignore pictures with display attribute set to none. Lazyload will not be triggered when display attribute is changed(i.e. remove_invisible.html). It may cause some trouble sometimes but scrolling your mouse will definately help!
 
 h2. License
 
