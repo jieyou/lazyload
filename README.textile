@@ -13,8 +13,9 @@ h2. 基于jQuery或Zepto的图片延迟加载插件
 这个项目由 "tuupola/jquery_lazyload":https://github.com/tuupola/jquery_lazyload fork而来，并加入了如下功能：
 * 修改了许多细节来提升性能;
 * 加入了对IE6/7的支持;
+* 可以在图片加载之前再根据需求动态修改图片的url;
 * 可以基于 "Zepto":https://github.com/madrobby/zepto 使用，而不是只能基于jQuery;
-* `vertical_only` 、 `minimum_interval` 、 `use_minimum_interval_in_ios` 、`no_fake_img_loader` 等额外的选项。
+* `vertical_only` 、 `no_fake_img_loader` 、`check_appear_throttle_time` 等额外的选项。
 
 h2. 如何使用?
 
@@ -26,7 +27,7 @@ h3. Basic
 <!-- 或 <script src="zepto.js"> -->
 <script src="lazyload.min.js"></script></pre>
 
-你必须改变你的HTML代码。真实图像的URL必须被放入到`data-original`属性中。给所有需要延迟加载图片一个特殊的class是一个好主意。这样你就可以很容易地控制哪些图片会被插件绑定到。请注意，你的图片应该有宽度和高度属性，或者通过CSS来控制图片的宽度和高度。
+你必须改写你的HTML代码。真实图像的URL必须被放入到`data-original`属性中。给所有需要延迟加载图片一个特殊的class是一个好主意。这样你就可以很容易地控制哪些图片会被插件绑定到。请注意，你的图片应该有宽度和高度属性，或者通过CSS来控制图片的宽度和高度，或者通过某些手段来确保它有正确的宽度和宽度。
 
 <pre>
     <!-- 直接赋予图片宽高 -->
@@ -179,9 +180,7 @@ h4. 在水平方向很宽的页面中使用
 <pre><img class="lazy" data-original="img/example.jpg" width="765" height="574"></pre>
 
 <pre>
-$("img.lazy").lazyload({
-    effect: "fadeIn"
-});
+$("img.lazy").lazyload();
 </pre>
 
 请参阅 `enabled_wide.html`
@@ -268,7 +267,7 @@ var options = {
     // 默认情况下，图像会在出现在屏幕上时被加载。如果你想的图像更早地加载，可以使用threshold参数。设置threshold为200，将导致图像在它离视窗边缘还有200px时开始加载。
     threshold          : 0, // default: 0. 另一个例子: 200
     
-    // 在页面滚动后，该插件将所有未加载的图像循环一遍。并在循环检查图像是否在视窗中。默认情况下，发现第一个位于视窗外的图片时，循环停止。这是基于以下的假设：页面上图像的顺序与它们在HTML代码中的顺序是一致的。然而对于某些布局，这可能是错误的。你可以通过设置failure_limit参数来控制循环终止的行为（failure_limit参数的数值为最多允许多少张图片被检查出位于视窗外后停止检查循环中剩余未检查的图片）。
+    // 在页面滚动后，该插件将所有未加载的图像循环一遍。并在循环检查图像是否在视窗中。默认情况下，发现第一个位于视窗外的图片时，循环停止。这是基于以下的假设：页面上图像的顺序与它们在HTML代码中的顺序是一致的。然而对于某些布局，这可能是错误的。你可以通过设置failure_limit参数来控制循环终止的行为（failure_limit参数的数值为最多允许多少张图片被检查出位于视窗外后停止检查循环中剩余未检查的图片），当你将它设置为一个比较大的数值，显著多余总的图片数量（如9999）时，则可以认为会检测到每一张图片。
     failure_limit      : 0, // default: 0. 另一个例子: 10
     
     // 指定触发什么事件时，开始加载真实的图片。你可以使用jQuery中已有的事件，如click或mouseover。你也可以使用自定义的事件如sporty或foobar。当事件是`scroll`或类似事件类型时，还需要检查图像是否已出现在视窗中。
@@ -289,20 +288,17 @@ var options = {
     // 当你将图片懒加载技术与`srcset`一起使用时，你不能将`srcset`的值直接写在`srcset`内，否则会导致图片立即加载。默认情况下，你应该写在属性`data-original-srcset`内，这样lazyload插件会帮你在合适的时候将它的赋值到`srcset`上。你可以通过修改下面这个值来改变这个属性名。注意下面这个值是不用包含`data-`头的。
     data_srcset_attribute     : 'original-srcset', // default: 'original-srcset'. 另一个例子: 'o-srcset'
     
-    // 当图片在视窗中出现时回调。`this`指向出现的图片元素的节点，参数为尚未出现的图片的数量和配置参数对象。
-    appear             : function(){}, // default: `the emptyFunc`. 另一个例子: function(elements_left, options){}
+    // 当图片在视窗中出现时回调。`this`指向出现的图片元素的节点，参数第一项为当前元素的jQuery|Zepto对象，第二项为尚未出现的图片的数量，第三项为配置参数对象。
+    appear             : function(){}, // default: `the emptyFunc`. 另一个例子: function($elements, elements_left, options){}
     
-    // 当图片加载完毕时回调。`this`指向出现的图片元素的节点，参数为尚未出现的图片的数量和配置参数对象。
-    load               : function(){}, // default: `the emptyFunc`. 另一个例子: function(elements_left, options){}
+    // 当图片加载完毕时回调。`this`指向出现的图片元素的节点，参数第一项为当前元素的jQuery|Zepto对象，第二项为尚未出现的图片的数量，第三项为配置参数对象。
+    load               : function(){}, // default: `the emptyFunc`. 另一个例子: function($elements, elements_left, options){}
     
     // 在大多数情况下，页面只能纵向滚动。此时，只需要检查图片的竖直位置是否出现在视图中即可。如果这样做能提高性能。你可以在只能纵向滚动的页面中将`vertical_only`参数设置为true
     vertical_only      : false, // default: false. 另一个例子: true
     
-    // 在参数`event`设置为`scroll`的情况下，除了iOS以外的设备，用户一次滚屏会触发多次scroll事件，而实际上我们无需在每一次scroll事件中检查图片是否已经出现在视窗中，通过这个参数设置两次检查之间最少的间隔时间，用来提高性能。当设置为0时，则为没有最少间隔时间，每一次scroll事件触发时都检测
-    minimum_interval            : 300, // default: 300. 另一个例子: 0
-    
-    // 和上面那个参数相关，iOS设备上，用户一次滚屏只会触发一次scroll事件，于是没有必要规定最小的检查之间的间隔。设置为false将忽略上面的检查间隔参数`minimum_interval`，设置为true则会处理上面的间隔参数
-    use_minimum_interval_in_ios : false, // default: false. 另一个例子: true
+    // 默认情况下，lazyload会在`window`的`scroll`、`resize`事件被触发时，检查图片是否已经出现在视窗中，但用户一次缩放屏幕通常可能连续触发多次resize事件；除了iOS以外的设备，用户一次滚屏也可能触发多次scroll事件，这造成了性能上的浪费。你可以通过这个参数设置两次检查之间最少的间隔时间，用来提高性能。当设置为0时，则每次触发`scroll`、`resize`事件时都会检测
+    check_appear_throttle_time            : 300, // default: 300. 另一个例子: 0
     
     // 重写图片的原始url。回调函数中，`this`指向出现的图片元素的节点，参数第一项为当前元素的jQuery|Zepto对象，第二项为当前元素的图片的原始url
     url_rewriter_fn             : function(){},  // default: `the emptyFunc`. 另一个例子: function($element,originalSrcInAttr){}
@@ -310,10 +306,10 @@ var options = {
     // 不使用假图片预加载（详见上面“高级”中的“不使用假图片预加载”）
     no_fake_img_loader          : false, // default: false. 另一个例子: true
     
-    // 如果一个img元素没有指定src属性，我们使用这个placeholder。
+    // 如果一个img元素没有指定src属性，我们使用这个placeholder，在真正的图片被加载之前，此img会呈现这个占位图。
     placeholder_data_img : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC',
     
-    // IE6/7 的 placeholder。
+    // IE6/7 的 placeholder。这是我当时在百度时的cdn地址，建议改为你服务器上的任一张灰色或白色的1*1的小图
     placeholder_real_img : 'http://webmap3.map.bdimg.com/yyfm/lazyload/0.0.1/img/placeholder.png'
 }
 
@@ -346,6 +342,7 @@ Lazy Load is inspired by "YUI ImageLoader":http://developer.yahoo.com/yui/imagel
 This project is forked from "tuupola/jquery_lazyload":https://github.com/tuupola/jquery_lazyload and add features below:
 * Modified many details to improve performance;
 * IE6/7 supported;
+* Can dynamically modify the image's url on demand before image loaded;
 * Available with "Zepto":https://github.com/madrobby/zepto ;
 * `vertical_only` \ `minimum_interval` \ `use_minimum_interval_in_ios` \ `no_fake_img_loader` options.
 
@@ -525,9 +522,7 @@ h4. Using in (horizontal) wide page
 <pre><img class="lazy" data-original="img/example.jpg" width="765" height="574"></pre>
 
 <pre>
-$("img.lazy").lazyload({
-    effect: "fadeIn"
-});
+$("img.lazy").lazyload();
 </pre>
 
 See `enabled_wide.html`
@@ -619,7 +614,7 @@ var options = {
     // By default images are loaded when they appear on the screen. If you want images to load earlier use threshold parameter. Setting threshold to 200 causes image to load 200 pixels before it appears on viewport.
     threshold          : 0, // default: 0. Another example: 200
     
-    // After scrolling page plugin loops though unloaded images. Loop checks if image has become visible. By default loop is stopped when first image outside viewport is found. This is based on following assumption. Order of images on page is same as order of images in HTML code. With some layouts assumption this might be wrong. You can control loading behaviour with failure_limit setting.
+    // After scrolling page plugin loops though unloaded images. Loop checks if image has become visible. By default loop is stopped when first image outside viewport is found. This is based on following assumption. Order of images on page is same as order of images in HTML code. With some layouts assumption this might be wrong. You can control loading behaviour with failure_limit setting, if you set it to a relatively large value, significantly more than the total number of images (such as 9999), it is considered that checks each images.
     failure_limit      : 0, // default: 0. Another example: 10
     
     // Specified an event, when it triggers, start loading the real images. You can use jQuery event such as click or mouseover. You can also use custom events such as sporty or foobar. if the event is `scroll` or a similar type, it also need to check if the image has appeared in the viewport. Default is to wait until user scrolls down and image appears on the viewport.
@@ -640,20 +635,17 @@ var options = {
     // when use with `srcset` attribute ，you can not directly write the value of` srcset` in `srcset` attribute，otherwise it will cause the image immediately loaded。By default, you can write in the attribute `data-original-srcset` , so the lazyload plugin will help you at the right time it is assigned to the` srcset` attribute . You can modify the following option's values to change the attribute name. Note that this value is not include `data-` prefix.
     data_srcset_attribute     : 'original-srcset', // default: 'original-srcset'. Another example: 'o-srcset'
     
-    // Call when one image is appear to the viewport. The `this` is refer to the appear image element node, params are count of elements not appear yet, and the options.
+    // Call when one image is appear to the viewport. The arguments for callback function: `this` : currect image element node, 1st: currect element's jQuery|Zepto objcet, 2nd: count of elements not appear yet, 3rd: the options.
     appear             : function(){}, // default: `the emptyFunc`. Another example: function(elements_left, options){}
     
-    // Call when one image is load. The `this` is refer to the appear image element node, params are count of elements not appear yet, and the options.
+    // Call when one image is load. The arguments for callback function: `this` : currect image element node, 1st: currect element's jQuery|Zepto objcet, 2nd: count of elements not appear yet, 3rd: the options.
     load               : function(){}, // default: `the emptyFunc`. Another example: function(elements_left, options){}
     
     // In most situations, page can only scroll vertically.At this time, only check images's vertical position will improve performance.You can only set vertical_only to true when page can only scroll vertically.
     vertical_only      : false, // default: false. Another example: true
-    
-    // When the option `event` is set to `scroll`, in addition to iOS devices, the scroll event will trigger several times in once user scrolling, but in fact we do not need to check if the images should apper in every scroll event , set the minimum interval between checks can improve performance. When set to `0`, it will check in every scroll event
-    minimum_interval   : 300, // default: 300. Another example: 0
-    
-    // When the option `event` is set to `scroll`, in iOS devices, the scroll event will trigger only one time in once user scrolling，so there is no need to use the `minimum_interval` option。set `false` will not use the `minimum_interval` option, set to `true` will use
-    use_minimum_interval_in_ios : false, // default: false. Another example: true
+
+    // By default, lazyload will check whether the image has appeared in the viewport when `window`'s `scroll` or `resize` event is triggered, but once a user continuous zoom screens may usually triggered several times `resize` event; in addition to the iOS device, a user may also trigger several times `scroll` event once a scroll screen, which resulted in the waste of a performance. set the minimum interval between checks. When set to `0`, it will check in every scroll\resize event.
+    check_appear_throttle_time            : 300, // default: 300. Another example: 0
     
     // rewrite image's original url. the arguments for callback function: `this` : currect image element node, 1st: currect element's jQuery|Zepto objcet, 2nd: currect element's original image src
     url_rewriter_fn             : function(){},  // default: `the emptyFunc`. Another example: function($element,originalSrcInAttr){}
@@ -661,10 +653,10 @@ var options = {
     // Without fake image preload mechanism（See details above）
     no_fake_img_loader          : false, // default: false. Another example: true
 
-    // If element is an img and no src attribute given, use placeholder. 
+    // If element is an img and no src attribute given, use placeholder. Before the real image is loaded, this will show this img placeholder.
     placeholder_data_img : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC',
     
-    // Placeholder for IE6/7
+    // Placeholder for IE6/7. This is Baidu's cdn addresses, I recommend that you change the url to your server ,on either a gray or white small 1 * 1 png.
     placeholder_real_img : 'http://ditu.baidu.cn/yyfm/lazyload/0.0.1/img/placeholder.png'
 }
 
