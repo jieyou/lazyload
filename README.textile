@@ -27,6 +27,11 @@ h3. Basic
 <!-- 或 <script src="zepto.js"> -->
 <script src="lazyload.min.js"></script></pre>
 
+或者用 Bower (http://bower.io/) 安装：
+```
+bower install jieyou_lazyload
+```
+
 你必须改写你的HTML代码。真实图像的URL必须被放入到`data-original`属性中。给所有需要延迟加载图片一个特殊的class是一个好主意。这样你就可以很容易地控制哪些图片会被插件绑定到。请注意，你的图片应该有宽度和高度属性，或者通过CSS来控制图片的宽度和高度，或者通过某些手段来确保它有正确的宽度和宽度。
 
 <pre>
