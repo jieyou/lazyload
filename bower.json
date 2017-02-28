@@ -1,0 +1,17 @@
+{
+  "name": "jieyou_lazyload",
+  "main": "lazyload.js",
+  "version": "1.4.1",
+  "homepage": "https://github.com/jieyou/lazyload",
+  "authors": [
+    "jieyou <qinjieyou@foxmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
