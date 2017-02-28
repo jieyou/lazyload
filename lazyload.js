@@ -176,10 +176,11 @@
             }
 
             $.each(defaultOptions,function(k,v){
+                var typeK = type(options[k])
                 if($.inArray(k,['threshold','failure_limit','check_appear_throttle_time']) != -1){ // these params can be a string
-                    if(type(options[k]) == 'String'){
+                    if(typeK == 'String'){
                         options[k] = parseInt(options[k],10)
-                    }else{
+                    }else if(typeK != 'Number'){
                         options[k] = v
                     }
                 }else if(k == 'container'){ // options.container can be a seletor string \ dom \ jQuery object
@@ -193,7 +194,7 @@
                         options._$container = $window
                     }
                     delete options.container
-                }else if(defaultOptions.hasOwnProperty(k) && (!options.hasOwnProperty(k) || (type(options[k]) != type(defaultOptions[k])))){
+                }else if(defaultOptions.hasOwnProperty(k) && (!options.hasOwnProperty(k) || (typeK != type(defaultOptions[k])))){
                     options[k] = v
                 }
             })
