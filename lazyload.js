@@ -134,8 +134,8 @@
 
     // Remove image from array so it is not looped next time. 
     function getUnloadElements($elements){
-        return $elements.filter(function(i,e){
-            return !$elements.eq(i)._lazyload_loadStarted
+        return $elements.filter(function(i){
+            return !$elements.eq(i).data('_lazyload_loadStarted')
         })
     }
 
@@ -219,13 +219,13 @@
                     originalSrcset = $element.attr('data-'+options.data_srcset_attribute),
                     isImg = $element.is('img')
 
-                if($element._lazyload_loadStarted == true || placeholderSrc == originalSrc){
-                    $element._lazyload_loadStarted = true
+                if($element.data('_lazyload_loadStarted') || placeholderSrc == originalSrc){
+                    $element.data('_lazyload_loadStarted',true)
                     $elements = getUnloadElements($elements)
                     return
                 }
 
-                $element._lazyload_loadStarted = false
+                $element.data('_lazyload_loadStarted',false)
 
                 // If element is an img and no src attribute given, use placeholder. 
                 if(isImg && !placeholderSrc){
@@ -262,12 +262,12 @@
                         }
                         $elements = getUnloadElements($elements)
                     }
-                    if(!$element._lazyload_loadStarted){
+                    if(!$element.data('_lazyload_loadStarted')){
                         effectIsNotImmediacyShow = (options.effect != 'show' && $.fn[options.effect] && (!options.effect_params || (effectParamsIsArray && options.effect_params.length == 0)))
                         if(options.appear != emptyFn){
                             options.appear.call(element, $element, $elements.length, options)
                         }
-                        $element._lazyload_loadStarted = true
+                        $element.data('_lazyload_loadStarted',true)
                         if(options.no_fake_img_loader || originalSrcset){
                             if(options.load != emptyFn){
                                 $element.one('load',function(){
@@ -290,7 +290,7 @@
                 // by triggering appear.                              
                 if (!isScrollTypeEvent){
                     $element.on(options.event, function(){
-                        if (!$element._lazyload_loadStarted){
+                        if (!$element.data('_lazyload_loadStarted')){
                             $element.trigger('_lazyload_appear')
                         }
                     })
